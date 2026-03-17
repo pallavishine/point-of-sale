@@ -1,0 +1,39 @@
+api_version = "2026-01"
+
+[[extensions]]
+type = "ui_extension"
+# Change the merchant-facing name of the extension in locales/en.default.json
+name = "t:name"
+uid = "85e040ee-b0a0-3b5c-1426-bd367479442842cbf37a"
+handle = "pos-block-2"
+
+# module: path to the file that contains your extension’s source code
+# target: string that describes where your extension appears in POS
+description = "Full POS workflow"
+
+
+[[extensions.targeting]]
+target = "pos.home.tile.render"
+module = "./src/Tile.jsx"
+
+[[extensions.targeting]]
+target = "pos.home.modal.render"
+module = "./src/HomeModal.jsx"
+
+
+[[extensions.targeting]]
+target = "pos.product-details.action.menu-item.render"
+module = "./src/ProductMenuItem.jsx"
+
+[[extensions.targeting]]
+target = "pos.product-details.action.render"
+module = "./src/ProductModal.jsx"
+
+
+[[extensions.targeting]]
+target = "pos.cart.line-item-details.action.menu-item.render"
+module = "./src/CartLineItemMenuItem.jsx"
+
+[[extensions.targeting]]
+target = "pos.cart.line-item-details.action.render"
+module = "./src/CartLineItemModal.jsx"
