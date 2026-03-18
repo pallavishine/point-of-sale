@@ -515,10 +515,7 @@ export default function GenerateBarcodePage() {
   );
 }
 
-/**
- * Separate component so the modal's fetcher is isolated and doesn't
- * interfere with ProductList's fetcher.
- */
+
 function ModalConfirmButton({
   selectedVariants,
   assignmentType,

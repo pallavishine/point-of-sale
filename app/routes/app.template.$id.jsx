@@ -615,15 +615,12 @@ export default function TemplateEditor() {
   const lines = useMemo(() => formData?.lines, [formData?.lines]);
   const { selectedFieldsAsLines, allFields } = useLinesManager(lines);
 
-
-  
   useEffect(() => {
-  const isSame = JSON.stringify(formData) ===JSON.stringify(TEMPLATE_DATA);
-  console.log("isSame", isSame);
+    const isSame = JSON.stringify(formData) === JSON.stringify(TEMPLATE_DATA);
+    console.log("isSame", isSame);
 
     setIsDirty(true);
   }, [formData]);
-
 
   // useEffect(() => {
   //   if (isDirty) {
@@ -633,29 +630,25 @@ export default function TemplateEditor() {
   //   }
   // }, [isDirty]);
 
- 
   useEffect(() => {
     if (!actionData) return;
     if (actionData.status) {
       shopify.toast.show(actionData.message);
     }
     setIsSaving(false);
-    setIsDirty(false); 
+    setIsDirty(false);
     navigate(-1);
   }, [actionData]);
 
- 
   const handleSave = () => {
     setIsSaving(true);
     const form = new FormData();
-  console.log("formData===>",formData)
+    console.log("formData===>", formData);
 
     form.append("data", JSON.stringify(formData));
     form.append("templateId", templateId);
     submit(form, { method: "post", encType: "multipart/form-data" });
-    
-  }
-
+  };
 
   const handleDiscard = useCallback(() => {
     resetForm();
@@ -690,11 +683,11 @@ export default function TemplateEditor() {
   }, []);
 
   return (
-    <s-page heading="" >
+    <s-page heading="">
       <s-link slot="breadcrumb-actions" href="/app">
         pos-app-new
       </s-link>
-      
+
       {/* <SaveBar id={SAVE_BAR_ID}>
         <button
           variant="primary"
@@ -711,45 +704,36 @@ export default function TemplateEditor() {
 
       <s-stack gap="base" padding="base">
         <s-box paddingInline="none" paddingBlock="small">
-          <s-stack direction="inline" gap="none" alignItems="start">
-            <s-icon
-              type="arrow-left"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                if (isDirty) {
-                  // If there are unsaved changes, ask before leaving.
-                  // The SaveBar already handles this when navigating via
-                  // Shopify nav — this guard covers the manual back button.
-                  if (
-                    window.confirm(
-                      "You have unsaved changes. Discard and leave?",
-                    )
-                  ) {
-                    handleDiscard();
+          <s-stack direction="inline" gap="none" justifyContent="space-between">
+            <s-stack direction="inline" gap="small">
+              <s-icon
+                type="arrow-left"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  if (isDirty) {
+                    console.log("You have unsaved changes. Discard and leave?");
+                    navigate("/app/template");
+                    // handleDiscard();
+                  } else {
                     navigate("/app/template");
                   }
-                } else {
-                  navigate("/app/template");
-                }
-              }}
-            />
-            <s-heading inlineSize>
-              {templateId && templateId !== "create"
-                ? "Edit Template"
-                : "New Template"}
-            </s-heading>
-          </s-stack  >
-
-          <s-button onClick={handleSave} >
-            Save
-          </s-button>
-          <s-button onClick={handleDiscard} >
-           Discard
-          </s-button>
+                }}
+              />
+              <s-heading inlineSize>
+                {templateId && templateId !== "create"
+                  ? "Edit Template"
+                  : "New Template"}
+              </s-heading>
+            </s-stack>
+            <s-button variant="primary" onClick={handleSave}>
+              Save
+            </s-button>
+            {/* <s-button variant="primary" onClick={handleDiscard}>Discard</s-button> */}
+          </s-stack>
         </s-box>
 
         <s-section padding="none">
-          {/* ── Tabs ─────────────────────────────────────────────────────── */}
+          {/* ── Tabs  */}
           <s-box padding="base">
             <s-stack gap="small" direction="inline">
               <s-clickable-chip
@@ -776,13 +760,8 @@ export default function TemplateEditor() {
               gap="base"
               paddingInline="small"
             >
-              {/* ── Left panel — form ───────────────────────────────────── */}
+              {/* ── Left panel — form  */}
               <s-grid-item gridColumn="span 2">
-                {/*
-                  No data-save-bar / data-discard-confirmation on the form.
-                  SaveBar is controlled entirely via shopify.saveBar.show/hide().
-                  onSubmit still wired so pressing Enter also saves.
-                */}
                 <form
                   id="template-form"
                   onSubmit={(e) => {
@@ -798,7 +777,7 @@ export default function TemplateEditor() {
                     borderStyle="auto"
                   >
                     {tabSelected === "general" ? (
-                      /* ── General tab ──────────────────────────────────── */
+                      /* ── General tab  */
                       <s-stack gap="small">
                         <s-text-field
                           label="Template Name"
@@ -894,7 +873,7 @@ export default function TemplateEditor() {
                         </s-stack>
                       </s-stack>
                     ) : (
-                      /* ── Label Settings tab ───────────────────────────── */
+                      /* ── Label Settings tab  */
                       <>
                         <s-stack direction="inline" gap="small">
                           {["simple", "advanced"].map((mode) => (
@@ -926,8 +905,7 @@ export default function TemplateEditor() {
                                   name={`margin${side}`}
                                   type="number"
                                   value={
-                                    formData?.settings?.[`margin${side}`] ||
-                                    0
+                                    formData?.settings?.[`margin${side}`] || 0
                                   }
                                   onChange={updateLabelSetting}
                                   suffix="in"
@@ -983,7 +961,7 @@ export default function TemplateEditor() {
                 </form>
               </s-grid-item>
 
-              {/* ── Right panel — preview ───────────────────────────────── */}
+              {/* ── Right panel — preview  */}
               <s-grid-item gridColumn="span 1">
                 <s-stack alignItems="center">
                   <s-heading>Preview</s-heading>

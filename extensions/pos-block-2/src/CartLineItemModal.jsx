@@ -1,39 +1,4 @@
-/**
- * CartLineItemModal.jsx
- * Target: pos.cart.line-item-details.action.render
- *
- * Per-item editor launched from the cart line item action menu.
- *
- * Confirmed real Polaris web components used (2026-01 docs):
- *   s-page, s-scroll-view, s-section (heading prop)
- *   s-text, s-stack, s-box
- *   s-choice-list + s-choice  ← for selling plan selection & discount type
- *   s-button (kind="primary" | "destructive", loading)
- *   s-segmented-control + s-segment  ← discount type toggle
- *   s-text-field, s-number-field
- *
- * NOTE: s-list-item does NOT exist in POS Polaris components.
- *   - Item summary        → s-stack + s-text inside s-box
- *   - Existing properties → rendered as s-stack rows with remove s-button
- *   - Selling plans       → s-choice-list + s-choice (radio behaviour)
- *   - Existing discounts  → s-stack + s-text display rows
- *
- * APIs:
- *   shopify.cartLineItem.*                   Cart Line Item API (read-only)
- *   shopify.cart.setLineItemDiscount()
- *   shopify.cart.removeLineItemDiscount()
- *   shopify.cart.addLineItemProperties()
- *   shopify.cart.removeLineItemProperties()
- *   shopify.cart.addLineItemSellingPlan()
- *   shopify.cart.removeLineItemSellingPlan()
- *   shopify.cart.removeLineItem()
- *   fetch('shopify:admin/api/graphql.json')
- *
- * References:
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/polaris-web-components/forms/choicelist
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/polaris-web-components/layout-and-structure/section
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
- */
+
 
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
@@ -226,7 +191,6 @@ function CartLineItemModal() {
     }
   }
 
-  // ── Remove item ─────────────────────────────────────────────────────────────
 
   async function removeItem() {
     try {
@@ -238,12 +202,10 @@ function CartLineItemModal() {
     }
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <s-page heading="Edit Line Item">
       <s-scroll-view>
-        {/* ── Item summary ───────────────────────────────────────────────── */}
         <s-section heading="Item Details">
           <s-stack direction="block" gap="small-200">
             <s-text type="strong">{title}</s-text>
@@ -262,7 +224,6 @@ function CartLineItemModal() {
           </s-stack>
         </s-section>
 
-        {/* ── Existing discounts ─────────────────────────────────────────── */}
         {existingDiscounts.length > 0 && (
           <s-section heading="Current Discounts">
             <s-stack direction="block" gap="small-200">
@@ -291,7 +252,6 @@ function CartLineItemModal() {
           </s-section>
         )}
 
-        {/* ── Apply line item discount ───────────────────────────────────── */}
         <s-section heading="Apply Line Item Discount">
           {/* Discount type — radio choice list (single-select) */}
           <s-choice-list
@@ -328,7 +288,6 @@ function CartLineItemModal() {
           </s-button>
         </s-section>
 
-        {/* ── Custom properties ──────────────────────────────────────────── */}
         <s-section heading="Custom Properties">
           {/* Existing properties as rows with inline Remove button */}
           {Object.keys(existingProperties).length > 0 && (
@@ -370,19 +329,12 @@ function CartLineItemModal() {
           </s-button>
         </s-section>
 
-        {/* ── Selling plans ──────────────────────────────────────────────── */}
         {(hasSellingPlanGroups || sellingPlan) && (
           <s-section heading="Selling Plans">
             {loadingPlans ? (
               <s-text>Loading subscription options…</s-text>
             ) : (
-              /*
-               * s-choice-list with single-select radio behaviour.
-               * values prop takes an array; we pass the currently active plan id
-               * or '__one_time__' when no plan is active.
-               * onChange fires immediately on selection (radio), so we call
-               * the Cart API right there via onPlanChange.
-               */
+           
               <s-choice-list values={[selectedPlanId]} onChange={onPlanChange}>
                 {/* One-time option — only shown when not required */}
                 {!requiresSellingPlan && (
@@ -411,7 +363,6 @@ function CartLineItemModal() {
           </s-section>
         )}
 
-        {/* ── Remove item ────────────────────────────────────────────────── */}
         <s-section>
           <s-button  onClick={removeItem}>
             Remove from Cart

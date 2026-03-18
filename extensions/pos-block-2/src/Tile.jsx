@@ -1,13 +1,4 @@
-/**
- * Tile.jsx
- * Target: pos.home.tile.render
- *
- * Renders a tile on the POS smart grid (home screen).
- * Tapping it opens the HomeModal where all workflows begin.
- *
- * Reference:
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/targets/home-screen
- */
+
 
 import { render } from 'preact';
 import { useState, useEffect } from 'preact/hooks';

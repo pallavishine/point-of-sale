@@ -71,7 +71,7 @@ const FullScreenScanner = () => {
       // Product found → add to cart
       // const variantId = product.productVariant.id?.split("/")?.pop();
       const productId = product.productVariant.product.id?.split("/")?.pop();
-      if(product?.hasOptions){
+      if(product){
         navigation.navigate(`shopify:point-of-sale/products/${productId}/variants/${variantId}`);
 
       }else {

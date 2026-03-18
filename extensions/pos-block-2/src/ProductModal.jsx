@@ -1,23 +1,4 @@
-/**
- * ProductModal.jsx
- * Target: pos.product-details.action.render
- *
- * Launched from ProductMenuItem on the product details screen.
- * Fetches the product's variants + selling plans via Admin GraphQL,
- * lets staff pick a variant, select a selling plan (subscription),
- * add custom properties, then adds to cart atomically.
- *
- * APIs:
- *   shopify.product.id                      – read-only product context
- *   shopify.cart.addLineItem()
- *   shopify.cart.addLineItemProperties()
- *   shopify.cart.addLineItemSellingPlan()
- *   fetch('shopify:admin/api/graphql.json')  – Direct Admin API
- *
- * References:
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/targets/product-details
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
- */
+
 
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
@@ -228,7 +209,7 @@ function ProductModal() {
               <s-list-item
                 title="One-time purchase"
                 subtitle="No recurring subscription"
-                onPress={() => setSelectedPlan(null)}
+                onClick={() => setSelectedPlan(null)}
                 badge={!selectedPlan ? "✓ Selected" : undefined}
               />
             )}
@@ -237,7 +218,7 @@ function ProductModal() {
                 key={sp.id}
                 title={sp.name}
                 subtitle={`Every ${sp.deliveryIntervalCount} ${sp.deliveryInterval.toLowerCase()}(s)`}
-                onPress={() => setSelectedPlan(sp)}
+                onClick={() => setSelectedPlan(sp)}
                 badge={selectedPlan?.id === sp.id ? "✓ Selected" : undefined}
               />
             ))}
@@ -258,7 +239,7 @@ function ProductModal() {
             placeholder="Happy Birthday!"
           />
           <s-button
-            onPress={() => {
+            onClick={() => {
               if (!propKey.trim()) return;
               setProperties((prev) => ({ ...prev, [propKey.trim()]: propVal }));
               setPropKey("");
@@ -272,7 +253,7 @@ function ProductModal() {
               key={k}
               title={k}
               subtitle={v}
-              onPress={() => {
+              onClick={() => {
                 const next = { ...properties };
                 delete next[k];
                 setProperties(next);
@@ -285,7 +266,7 @@ function ProductModal() {
         <s-section>
           <s-button
             kind="primary"
-            onPress={addToCart}
+            onClick={addToCart}
             loading={addingToCart}
             disabled={selectedVariant.requiresSellingPlan && !selectedPlan}
           >
