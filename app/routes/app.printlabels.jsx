@@ -36,9 +36,9 @@ export async function loader({ request }) {
   const productTypes =
     typesJson.data?.productTypes.edges.map(({ node }) => node) ?? [];
 
-  const labelTemplates = await JSON.parse(JSON.stringify(templates));
+  const templateList = await JSON.parse(JSON.stringify(templates));
 
-  return { collections: collectionMap, productTypes, labelTemplates ,shop:session.shop};
+  return { collections: collectionMap, productTypes, templateList ,shop:session.shop};
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -171,7 +171,7 @@ export async function action({ request }) {
 // Page component
 // ─────────────────────────────────────────────────────────────────────────────
 export default function PrintLabels() {
-  const { collections, productTypes, labelTemplates ,shop} = useLoaderData();
+  const { collections, productTypes, templateList ,shop} = useLoaderData();
   const fetcher = useFetcher();
   const navigate = useNavigate();
 
@@ -180,7 +180,7 @@ export default function PrintLabels() {
   const [selectedVariants, setSelectedVariants] = useState([]);
   const [selectedVariantIds, setSelectedVariantIds] = useState(new Set());
   const [printFeedback, setPrintFeedback] = useState(null);
-  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState(()=>templateList?.length==1 ? templateList[0] : null);
   const [codeFormat, setCodeFormat] = useState("");
   const [filters, setFilters] = useState({
     search: "",
@@ -276,7 +276,7 @@ export default function PrintLabels() {
 
         <s-grid gridTemplateColumns="repeat(3, 1fr)" gap="large">
           {" "}
-          {labelTemplates?.map((template, index) => (
+          {templateList?.map((template, index) => (
             <s-grid-item key={index}>
               <s-clickable onClick={(e) => setSelectedTemplate(template)} padding="none" >
                 <s-box

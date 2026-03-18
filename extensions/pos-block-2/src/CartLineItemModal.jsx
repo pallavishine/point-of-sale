@@ -41,17 +41,17 @@ export default async () => {
 
 function CartLineItemModal() {
   const lineItem = shopify.cartLineItem;
+  console.log("lineItemlineItem",lineItem);
 
-  const uuid = lineItem.uuid;
-  const title = lineItem.title ?? `Item #${lineItem.variantId}`;
-  const price = lineItem.price;
-  const quantity = lineItem.quantity;
-  const sku = lineItem.sku;
-  const sellingPlan = lineItem.sellingPlan;
-  const hasSellingPlanGroups = lineItem.hasSellingPlanGroups ?? false;
-  const requiresSellingPlan = lineItem.requiresSellingPlan ?? false;
-  const existingProperties = lineItem.properties ?? {};
-  const existingDiscounts = lineItem.discounts ?? [];
+  const uuid = lineItem?.uuid;
+  const title = lineItem?.title ?? `Item #${lineItem?.variantId}`;
+  const price = lineItem?.price;
+  const quantity = lineItem?.quantity;
+  const sku = lineItem?.sku;
+  const sellingPlan = lineItem?.sellingPlan;
+  const hasSellingPlanGroups = lineItem?.hasSellingPlanGroups ?? false;
+  const existingProperties = lineItem?.properties ?? {};
+  const existingDiscounts = lineItem?.discounts ?? [];
 
   // ── Discount state ──────────────────────────────────────────────────────────
   const [discountType, setDiscountType] = useState("Percentage");
@@ -72,12 +72,12 @@ function CartLineItemModal() {
   const [loadingPlans, setLoadingPlans] = useState(false);
 
   useEffect(() => {
-    if (!hasSellingPlanGroups || !lineItem.variantId) return;
+    if (!hasSellingPlanGroups || !lineItem?.variantId) return;
     (async () => {
       setLoadingPlans(true);
       try {
         const data = await gql(VARIANT_SELLING_PLANS_QUERY, {
-          id: `gid://shopify/ProductVariant/${lineItem.variantId}`,
+          id: `gid://shopify/ProductVariant/${lineItem?.variantId}`,
         });
         const plans = (
           data?.data?.productVariant?.sellingPlanGroups?.edges ?? []
@@ -95,7 +95,7 @@ function CartLineItemModal() {
         setLoadingPlans(false);
       }
     })();
-  }, [hasSellingPlanGroups, lineItem.variantId]);
+  }, [hasSellingPlanGroups, lineItem?.variantId]);
 
   // ── Discount handlers ───────────────────────────────────────────────────────
 
@@ -196,7 +196,7 @@ function CartLineItemModal() {
     try {
       await shopify.cart.removeLineItem(uuid);
       shopify.toast.show("Item removed from cart");
-      shopify.action.close();
+      // shopify.action.close();
     } catch {
       shopify.toast.show("Failed to remove item");
     }
@@ -337,14 +337,12 @@ function CartLineItemModal() {
            
               <s-choice-list values={[selectedPlanId]} onChange={onPlanChange}>
                 {/* One-time option — only shown when not required */}
-                {!requiresSellingPlan && (
-                  <s-choice value="__one_time__">
+                <s-choice value="__one_time__">
                     <s-stack direction="block" gap="small">
                       <s-text type="strong">One-time purchase</s-text>
                       <s-text color="subdued">No recurring subscription</s-text>
                     </s-stack>
                   </s-choice>
-                )}
 
                 {/* Available selling plans */}
                 {availablePlans.map((sp) => (
