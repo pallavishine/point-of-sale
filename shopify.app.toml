@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "b576952f3383c5296c8139c64918bc5d"
-name = "pos-app"
+client_id = "8992c83a5a7d57a14bd874a1df74367e"
+name = "pos-product"
 application_url = "https://example.com"
 embedded = true
 
@@ -11,14 +11,6 @@ include_config_on_deploy = true
 
 [webhooks]
 api_version = "2026-04"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/uninstalled" ]
-  uri = "/webhooks/app/uninstalled"
-
-  [[webhooks.subscriptions]]
-  topics = [ "app/scopes_update" ]
-  uri = "/webhooks/app/scopes_update"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
