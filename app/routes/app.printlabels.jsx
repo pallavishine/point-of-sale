@@ -294,7 +294,7 @@ export default function PrintLabels() {
                     selectedTemplate?._id == template?._id ? "strong" : "base"
                   }
                 >
-                  <s-stack direction="block" gap="none" >
+                  <s-stack  gap="none" >
                     <s-stack direction="inline" justifyContent="space-between">
                       <s-heading variant="headingSm">
                         {template.templateName}

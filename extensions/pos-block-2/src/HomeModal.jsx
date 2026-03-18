@@ -1,9 +1,5 @@
-
-
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
-
-// ─── GraphQL helpers ──────────────────────────────────────────────────────────
 
 async function gql(query, variables = {}) {
   const res = await fetch("shopify:admin/api/graphql.json", {
@@ -84,57 +80,66 @@ function HomeModal() {
 
   return (
     <s-page heading="POS Manager">
-      <s-stack alignContent="center">
-        <s-box paddingBlock="large" paddingInline="small">
-          <s-section heading="Full POS workflow: customer login/signup, product search, cart management, discounts, and selling plans">
-            {!activeTab && (
-              <s-stack direction="block" gap="base">
-                {/* Row 1 */}
-                <s-stack direction="inline" gap="base">
-                  <s-tile
-                    heading="Customer"
-                    onClick={() => setActiveTab("customer")}
-                  >
-                    <s-icon type="person" />
-                  </s-tile>
+      <s-scroll-box padding="base">
+        <s-stack gap="small">
+          <s-stack alignContent="center">
+            <s-box paddingBlock="large" paddingInline="small">
+              <s-section heading="Full POS workflow: customer login/signup, product search, cart management, discounts, and selling plans">
+                {!activeTab && (
+                  <s-box padding="large">
+                    <s-stack
+                      direction="inline"
+                      justifyContent="center"
+                      alignItems="center"
+                    >
+                      <s-stack gap="large">
+                        {/* Row 1 */}
+                        <s-stack direction="inline" gap="large">
+                          <s-tile
+                            heading="Customer"
+                            onClick={() => setActiveTab("customer")}
+                          />
 
-                  <s-tile
-                    heading="Products"
-                    onClick={() => setActiveTab("products")}
-                  >
-                    <s-icon type="product" />
-                  </s-tile>
-                </s-stack>
+                          <s-tile
+                            heading="Products"
+                            onClick={() => setActiveTab("products")}
+                          />
+                        </s-stack>
 
-                {/* Row 2 */}
-                <s-stack direction="inline" gap="base">
-                  <s-tile
-                    heading="Discounts"
-                    onClick={() => setActiveTab("discounts")}
-                  >
-                    <s-icon type="product" />
-                  </s-tile>
+                        {/* Row 2 */}
+                        <s-stack direction="inline" gap="large">
+                          <s-tile
+                            heading="Discounts"
+                            onClick={() => setActiveTab("discounts")}
+                          />
 
-                  <s-tile heading="Cart" onClick={() => setActiveTab("cart")}>
-                    <s-icon type="cart" />
-                  </s-tile>
-                </s-stack>
-              </s-stack>
-            )}
-          </s-section>
+                          <s-tile
+                            heading="Cart Page"
+                            onClick={() => setActiveTab("cart")}
+                          />
+                        </s-stack>
+                      </s-stack>
+                    </s-stack>
+                  </s-box>
+                )}
+              </s-section>
 
-          {activeTab === "customer" && (
-            <CustomerSection setActiveTab={setActiveTab} />
-          )}
-          {activeTab === "products" && (
-            <ProductsSection setActiveTab={setActiveTab} />
-          )}
-          {activeTab === "discounts" && (
-            <DiscountsSection setActiveTab={setActiveTab} />
-          )}
-          {activeTab === "cart" && <CartSection setActiveTab={setActiveTab} />}
-        </s-box>
-      </s-stack>
+              {activeTab === "customer" && (
+                <CustomerSection setActiveTab={setActiveTab} />
+              )}
+              {activeTab === "products" && (
+                <ProductsSection setActiveTab={setActiveTab} />
+              )}
+              {activeTab === "discounts" && (
+                <DiscountsSection setActiveTab={setActiveTab} />
+              )}
+              {activeTab === "cart" && (
+                <CartSection setActiveTab={setActiveTab} />
+              )}
+            </s-box>
+          </s-stack>
+        </s-stack>
+      </s-scroll-box>
     </s-page>
   );
 }
@@ -352,23 +357,23 @@ function ProductsSection({ setActiveTab }) {
           id: node.id,
           title: node.title,
           vendor: node.vendor,
-          variants: (node.variants?.edges ?? []).map(({ node: v }) => ({
-            id: v.id,
-            numericId: numericId(v.id),
-            title: v.title,
-            price: v.price,
-            sku: v.sku ?? "",
-            sellingPlanGroups: (v.sellingPlanGroups?.edges ?? []).map(
+          variants: (node.variants?.edges ?? []).map(({ node: variant }) => ({
+            id: variant?.id,
+            numericId: numericId(variant?.id),
+            title: variant?.title,
+            price: variant?.price,
+            sku: variant?.sku ?? "",
+            sellingPlanGroups: (variant?.sellingPlanGroups?.edges ?? []).map(
               ({ node: spg }) => ({
                 name: spg.name,
                 sellingPlans: (spg.sellingPlans?.edges ?? []).map(
-                  ({ node: sp }) => ({
-                    id: sp.id,
-                    numericId: numericId(sp.id),
-                    name: sp.name,
-                    deliveryInterval: sp.deliveryPolicy?.interval ?? "MONTH",
+                  ({ node: item }) => ({
+                    id: item?.id,
+                    numericId: numericId(item?.id),
+                    name: item?.name,
+                    deliveryInterval: item?.deliveryPolicy?.interval ?? "MONTH",
                     deliveryIntervalCount:
-                      sp.deliveryPolicy?.intervalCount ?? 1,
+                      item?.deliveryPolicy?.intervalCount ?? 1,
                   }),
                 ),
               }),
@@ -438,7 +443,7 @@ function ProductsSection({ setActiveTab }) {
 }
 
 function ProductDetail({ product, onBack, setActiveTab }) {
-  const [selectedVariant, setSelectedVariant] = useState(product.variants[0]);
+  const [selectedVariant, setSelectedVariant] = useState(product?.variants[0]);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [properties, setProperties] = useState({});
   const [propKey, setPropKey] = useState("");
@@ -453,7 +458,10 @@ function ProductDetail({ product, onBack, setActiveTab }) {
   async function addToCart() {
     setLoading(true);
     try {
-      const uuid = await shopify.cart.addLineItem(selectedVariant.numericId, 1);
+      const uuid = await shopify.cart.addLineItem(
+        selectedVariant?.numericId,
+        1,
+      );
       if (!uuid) {
         shopify.toast.show("Item not added (oversell guard dismissed)");
         return;
@@ -464,14 +472,14 @@ function ProductDetail({ product, onBack, setActiveTab }) {
       if (selectedPlan) {
         await shopify.cart.addLineItemSellingPlan({
           lineItemUuid: uuid,
-          sellingPlanId: selectedPlan.numericId,
-          sellingPlanName: selectedPlan.name,
-          deliveryInterval: selectedPlan.deliveryInterval,
-          deliveryIntervalCount: selectedPlan.deliveryIntervalCount,
+          sellingPlanId: selectedPlan?.numericId,
+          sellingPlanName: selectedPlan?.name,
+          deliveryInterval: selectedPlan?.deliveryInterval,
+          deliveryIntervalCount: selectedPlan?.deliveryIntervalCount,
         });
       }
       shopify.toast.show(
-        `${product.title}${selectedPlan ? ` (${selectedPlan.name})` : ""} added`,
+        `${product?.title}${selectedPlan ? ` (${selectedPlan?.name})` : ""} added`,
       );
     } catch (err) {
       shopify.toast.show(`Failed: ${err?.message ?? "Unknown error"}`);
@@ -481,34 +489,34 @@ function ProductDetail({ product, onBack, setActiveTab }) {
   }
 
   return (
-    <s-scroll-view>
+    <s-scroll-box paddingInline="large" paddingBlock="base">
       <s-section>
         <s-button onClick={onBack}> ← Back to results</s-button>
       </s-section>
 
-      <s-section heading={product.title}>
-        <s-text>Vendor: {product.vendor}</s-text>
+      <s-section heading={product?.title}>
+        <s-text>Vendor: {product?.vendor}</s-text>
       </s-section>
 
-      {product.variants.length > 1 && (
+      {product?.variants?.length > 1 && (
         <s-section heading="Select Variant">
           <s-choice-list
-            values={[selectedVariant.id]}
+            values={[selectedVariant?.id]}
             onChange={(e) => {
-              const v = product.variants.find(
-                (v) => v.id === e.currentTarget.values?.[0],
+              const variant = product?.variants?.find(
+                (variant) => variant?.id === e.currentTarget.values?.[0],
               );
-              if (v) {
-                setSelectedVariant(v);
+              if (variant) {
+                setSelectedVariant(variant);
                 setSelectedPlan(null);
               }
             }}
           >
-            {product.variants.map((v) => (
+            {product?.variants?.map((variant) => (
               <s-choice
-                key={v.id}
-                value={v.id}
-              >{`${v.title} — $${v.price}`}</s-choice>
+                key={variant?.id}
+                value={variant?.id}
+              >{`${variant?.title} — $${variant?.price}`}</s-choice>
             ))}
           </s-choice-list>
         </s-section>
@@ -516,8 +524,8 @@ function ProductDetail({ product, onBack, setActiveTab }) {
 
       <s-section heading="Variant Details">
         <s-stack>
-          {selectedVariant.title} -{" "}
-          {`$${selectedVariant.price}${selectedVariant.sku ? ` · SKU: ${selectedVariant.sku}` : ""}`}
+          {selectedVariant?.title} -{" "}
+          {`$${selectedVariant?.price}${selectedVariant?.sku ? ` · SKU: ${selectedVariant?.sku}` : ""}`}
         </s-stack>
       </s-section>
 
@@ -534,13 +542,13 @@ function ProductDetail({ product, onBack, setActiveTab }) {
             }}
           />
 
-          {allPlans.map((sp) => (
-            <s-clickable key={sp.id} onClick={() => setSelectedPlan(sp)}>
+          {allPlans.map((item) => (
+            <s-clickable key={item?.id} onClick={() => setSelectedPlan(item)}>
               <s-stack>
                 {" "}
-                {sp.name} :{" "}
-                {`Every ${sp.deliveryIntervalCount} ${sp.deliveryInterval.toLowerCase()}(s)`}
-                : {selectedPlan?.id === sp.id ? "Selected" : undefined}{" "}
+                {item?.name} :{" "}
+                {`Every ${item?.deliveryIntervalCount} ${item?.deliveryInterval.toLowerCase()}(s)`}
+                : {selectedPlan?.id === item?.id ? "Selected" : undefined}{" "}
               </s-stack>
             </s-clickable>
           ))}
@@ -571,7 +579,7 @@ function ProductDetail({ product, onBack, setActiveTab }) {
           + Add Property
         </s-button>
 
-        {Object.entries(properties).map(([k, v]) => (
+        {Object.entries(properties).map(([k, variant]) => (
           <s-clickable
             key={k}
             onClick={() => {
@@ -581,7 +589,7 @@ function ProductDetail({ product, onBack, setActiveTab }) {
             }}
           >
             <s-stack>
-              {k} - {v}
+              {k} - {variant}
             </s-stack>
           </s-clickable>
         ))}
@@ -589,10 +597,10 @@ function ProductDetail({ product, onBack, setActiveTab }) {
 
       <s-section>
         <s-button variant="primary" onClick={addToCart} loading={loading}>
-          Add to Cart{selectedPlan ? ` · ${selectedPlan.name}` : ""}
+          Add to Cart{selectedPlan ? ` · ${selectedPlan?.name}` : ""}
         </s-button>
       </s-section>
-    </s-scroll-view>
+    </s-scroll-box>
   );
 }
 
@@ -641,86 +649,90 @@ function DiscountsSection({ setActiveTab }) {
 
   return (
     <s-page>
-      {cartDiscount && (
-        <s-section heading="Active Cart Discount">
-          <s-tile
-            heading={cartDiscount.discountDescription ?? "Custom Discount"}
-            subheading={
-              cartDiscount.type === "Percentage"
-                ? `${cartDiscount.amount}% off`
-                : `$${cartDiscount.amount} off`
-            }
-          />
-          <s-button
-            onClick={async () => {
-              try {
-                await shopify.cart.removeCartDiscount();
-                shopify.toast.show("Cart discount removed");
-              } catch {
-                shopify.toast.show("Failed to remove discount");
-              }
-            }}
-          >
-            Remove Discount
-          </s-button>
-        </s-section>
-      )}
+      <s-scroll-box padding="base">
+        <s-stack gap="small">
+          {cartDiscount && (
+            <s-section heading="Active Cart Discount">
+              <s-tile
+                heading={cartDiscount.discountDescription ?? "Custom Discount"}
+                subheading={
+                  cartDiscount.type === "Percentage"
+                    ? `${cartDiscount.amount}% off`
+                    : `$${cartDiscount.amount} off`
+                }
+              />
+              <s-button
+                onClick={async () => {
+                  try {
+                    await shopify.cart.removeCartDiscount();
+                    shopify.toast.show("Cart discount removed");
+                  } catch {
+                    shopify.toast.show("Failed to remove discount");
+                  }
+                }}
+              >
+                Remove Discount
+              </s-button>
+            </s-section>
+          )}
 
-      <s-section heading="Apply Cart Discount">
-        <s-choice-list
-          values={[discountType]}
-          onChange={(e) => setDiscountType(e.currentTarget.values[0])}
-        >
-          <s-choice value="Percentage">Percentage %</s-choice>
-          <s-choice value="FixedAmount">Fixed Amount $</s-choice>
-          <s-choice value="Code">Discount Code</s-choice>
-        </s-choice-list>
+          <s-section heading="Apply Cart Discount">
+            <s-choice-list
+              values={[discountType]}
+              onChange={(e) => setDiscountType(e.currentTarget.values[0])}
+            >
+              <s-choice value="Percentage">Percentage %</s-choice>
+              <s-choice value="FixedAmount">Fixed Amount $</s-choice>
+              <s-choice value="Code">Discount Code</s-choice>
+            </s-choice-list>
 
-        {discountType === "Code" ? (
-          <s-text-field
-            label="Discount Code"
-            value={discountCode}
-            onChange={(e) => setDiscountCode(e.target.value)}
-            placeholder="SUMMER10"
-          />
-        ) : (
-          <>
-            <s-text-field
-              label="Discount Title"
-              value={discountTitle}
-              onChange={(e) => setDiscountTitle(e.target.value)}
-              placeholder="Staff discount"
-            />
-            <s-number-field
-              label={
-                discountType === "Percentage"
-                  ? "Percentage (e.g. 10)"
-                  : "Fixed Amount (e.g. 5.00)"
-              }
-              value={discountAmount}
-              onChange={(e) => setDiscountAmount(e.target.value)}
-            />
-          </>
-        )}
-        <s-button onClick={applyDiscount} loading={loading}>
-          Apply Discount
-        </s-button>
-      </s-section>
+            {discountType === "Code" ? (
+              <s-text-field
+                label="Discount Code"
+                value={discountCode}
+                onChange={(e) => setDiscountCode(e.target.value)}
+                placeholder="SUMMER10"
+              />
+            ) : (
+              <>
+                <s-text-field
+                  label="Discount Title"
+                  value={discountTitle}
+                  onChange={(e) => setDiscountTitle(e.target.value)}
+                  placeholder="Staff discount"
+                />
+                <s-number-field
+                  label={
+                    discountType === "Percentage"
+                      ? "Percentage (e.g. 10)"
+                      : "Fixed Amount (e.g. 5.00)"
+                  }
+                  value={discountAmount}
+                  onChange={(e) => setDiscountAmount(e.target.value)}
+                />
+              </>
+            )}
+            <s-button onClick={applyDiscount} loading={loading}>
+              Apply Discount
+            </s-button>
+          </s-section>
 
-      <s-section heading="Clear Discounts">
-        <s-button
-          onClick={async () => {
-            try {
-              await shopify.cart.removeAllDiscounts(true);
-              shopify.toast.show("All discounts removed");
-            } catch {
-              shopify.toast.show("Failed to remove all discounts");
-            }
-          }}
-        >
-          Remove All Discounts
-        </s-button>
-      </s-section>
+          <s-section heading="Clear Discounts">
+            <s-button
+              onClick={async () => {
+                try {
+                  await shopify.cart.removeAllDiscounts(true);
+                  shopify.toast.show("All discounts removed");
+                } catch {
+                  shopify.toast.show("Failed to remove all discounts");
+                }
+              }}
+            >
+              Remove All Discounts
+            </s-button>
+          </s-section>
+        </s-stack>
+      </s-scroll-box>
     </s-page>
   );
 }
@@ -737,79 +749,86 @@ function CartSection({ setActiveTab }) {
 
   return (
     <s-page>
-      <s-stack>
-        <s-button onClick={() => setActiveTab("")}>
-          <s-icon type="arrow-left" /> Back
-        </s-button>
-      </s-stack>
-      <s-section heading="Cart Summary">
-        <s-tile heading="Subtotal" subheading={cart.subtotal} />
-        <s-tile heading="Tax" subheading={cart.taxTotal} />
-        <s-tile heading="Grand Total" subheading={cart.grandTotal} />
-        {cart.customer && (
-          <s-tile heading="Customer" subheading={`ID: ${cart.customer.id}`} />
-        )}
-        {cart.cartDiscount && (
-          <s-tile
-            heading={`Discount: ${cart.cartDiscount.discountDescription ?? "Applied"}`}
-            subheading={
-              cart.cartDiscount.type === "Percentage"
-                ? `${cart.cartDiscount.amount}% off`
-                : `$${cart.cartDiscount.amount} off`
-            }
-          />
-        )}
-      </s-section>
-
-      {cart.lineItems.length === 0 ? (
-        <s-section>
-          <s-text>Cart is empty.</s-text>
-        </s-section>
-      ) : (
-        <s-section heading="Line Items">
-          {cart.lineItems.map((item) => (
-            <s-tile
-              key={item.uuid}
-              heading={item.title ?? `Variant #${item.variantId}`}
-              subheading={[
-                `Qty: ${item.quantity}`,
-                item.price ? `$${item.price}` : "",
-                item.sellingPlan ? `📅 ${item.sellingPlan.name}` : "",
-                item.discounts?.length
-                  ? `🏷 ${item.discounts[0].discountDescription}`
-                  : "",
-              ]
-                .filter(Boolean)
-                .join(" · ")}
-              onClick={async () => {
-                try {
-                  await shopify.cart.removeLineItem(item.uuid);
-                  shopify.toast.show("Item removed");
-                } catch {
-                  shopify.toast.show("Failed to remove item");
+      <s-scroll-box padding="base">
+        <s-stack gap="small">
+          <s-stack>
+            <s-button onClick={() => setActiveTab("")}>
+              <s-icon type="arrow-left" /> Back
+            </s-button>
+          </s-stack>
+          <s-section heading="Cart Summary">
+            <s-tile heading="Subtotal" subheading={cart.subtotal} />
+            <s-tile heading="Tax" subheading={cart.taxTotal} />
+            <s-tile heading="Grand Total" subheading={cart.grandTotal} />
+            {cart.customer && (
+              <s-tile
+                heading="Customer"
+                subheading={`ID: ${cart.customer.id}`}
+              />
+            )}
+            {cart.cartDiscount && (
+              <s-tile
+                heading={`Discount: ${cart.cartDiscount.discountDescription ?? "Applied"}`}
+                subheading={
+                  cart.cartDiscount.type === "Percentage"
+                    ? `${cart.cartDiscount.amount}% off`
+                    : `$${cart.cartDiscount.amount} off`
                 }
-              }}
-            />
-          ))}
-        </s-section>
-      )}
+              />
+            )}
+          </s-section>
 
-      {cart.lineItems.length > 0 && (
-        <s-section>
-          <s-button
-            onClick={async () => {
-              try {
-                await shopify.cart.clearCart();
-                shopify.toast.show("Cart cleared");
-              } catch {
-                shopify.toast.show("Failed to clear cart");
-              }
-            }}
-          >
-            Clear Cart
-          </s-button>
-        </s-section>
-      )}
+          {cart.lineItems.length === 0 ? (
+            <s-section>
+              <s-text>Cart is empty.</s-text>
+            </s-section>
+          ) : (
+            <s-section heading="Line Items">
+              {cart.lineItems.map((item) => (
+                <s-tile
+                  key={item?.uuid}
+                  heading={item?.title ?? `Variant #${item?.variantId}`}
+                  subheading={[
+                    `Qty: ${item?.quantity}`,
+                    item?.price ? `$${item?.price}` : "",
+                    item?.sellingPlan ? `📅 ${item?.sellingPlan.name}` : "",
+                    item?.discounts?.length
+                      ? `🏷 ${item?.discounts[0].discountDescription}`
+                      : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                  onClick={async () => {
+                    try {
+                      await shopify.cart.removeLineItem(item?.uuid);
+                      shopify.toast.show("Item removed");
+                    } catch {
+                      shopify.toast.show("Failed to remove item");
+                    }
+                  }}
+                />
+              ))}
+            </s-section>
+          )}
+
+          {cart.lineItems.length > 0 && (
+            <s-section>
+              <s-button
+                onClick={async () => {
+                  try {
+                    await shopify.cart.clearCart();
+                    shopify.toast.show("Cart cleared");
+                  } catch {
+                    shopify.toast.show("Failed to clear cart");
+                  }
+                }}
+              >
+                Clear Cart
+              </s-button>
+            </s-section>
+          )}
+        </s-stack>
+      </s-scroll-box>
     </s-page>
   );
 }
