@@ -1,39 +1,4 @@
-/**
- * CartLineItemModal.jsx
- * Target: pos.cart.line-item-details.action.render
- *
- * Per-item editor launched from the cart line item action menu.
- *
- * Confirmed real Polaris web components used (2026-01 docs):
- *   s-page, s-scroll-view, s-section (heading prop)
- *   s-text, s-stack, s-box
- *   s-choice-list + s-choice  ← for selling plan selection & discount type
- *   s-button (kind="primary" | "destructive", loading)
- *   s-segmented-control + s-segment  ← discount type toggle
- *   s-text-field, s-number-field
- *
- * NOTE: s-list-item does NOT exist in POS Polaris components.
- *   - Item summary        → s-stack + s-text inside s-box
- *   - Existing properties → rendered as s-stack rows with remove s-button
- *   - Selling plans       → s-choice-list + s-choice (radio behaviour)
- *   - Existing discounts  → s-stack + s-text display rows
- *
- * APIs:
- *   shopify.cartLineItem.*                   Cart Line Item API (read-only)
- *   shopify.cart.setLineItemDiscount()
- *   shopify.cart.removeLineItemDiscount()
- *   shopify.cart.addLineItemProperties()
- *   shopify.cart.removeLineItemProperties()
- *   shopify.cart.addLineItemSellingPlan()
- *   shopify.cart.removeLineItemSellingPlan()
- *   shopify.cart.removeLineItem()
- *   fetch('shopify:admin/api/graphql.json')
- *
- * References:
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/polaris-web-components/forms/choicelist
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/polaris-web-components/layout-and-structure/section
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
- */
+
 
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
@@ -76,17 +41,17 @@ export default async () => {
 
 function CartLineItemModal() {
   const lineItem = shopify.cartLineItem;
+  console.log("lineItemlineItem",lineItem);
 
-  const uuid = lineItem.uuid;
-  const title = lineItem.title ?? `Item #${lineItem.variantId}`;
-  const price = lineItem.price;
-  const quantity = lineItem.quantity;
-  const sku = lineItem.sku;
-  const sellingPlan = lineItem.sellingPlan;
-  const hasSellingPlanGroups = lineItem.hasSellingPlanGroups ?? false;
-  const requiresSellingPlan = lineItem.requiresSellingPlan ?? false;
-  const existingProperties = lineItem.properties ?? {};
-  const existingDiscounts = lineItem.discounts ?? [];
+  const uuid = lineItem?.uuid;
+  const title = lineItem?.title ?? `Item #${lineItem?.variantId}`;
+  const price = lineItem?.price;
+  const quantity = lineItem?.quantity;
+  const sku = lineItem?.sku;
+  const sellingPlan = lineItem?.sellingPlan;
+  const hasSellingPlanGroups = lineItem?.hasSellingPlanGroups ?? false;
+  const existingProperties = lineItem?.properties ?? {};
+  const existingDiscounts = lineItem?.discounts ?? [];
 
   // ── Discount state ──────────────────────────────────────────────────────────
   const [discountType, setDiscountType] = useState("Percentage");
@@ -107,12 +72,12 @@ function CartLineItemModal() {
   const [loadingPlans, setLoadingPlans] = useState(false);
 
   useEffect(() => {
-    if (!hasSellingPlanGroups || !lineItem.variantId) return;
+    if (!hasSellingPlanGroups || !lineItem?.variantId) return;
     (async () => {
       setLoadingPlans(true);
       try {
         const data = await gql(VARIANT_SELLING_PLANS_QUERY, {
-          id: `gid://shopify/ProductVariant/${lineItem.variantId}`,
+          id: `gid://shopify/ProductVariant/${lineItem?.variantId}`,
         });
         const plans = (
           data?.data?.productVariant?.sellingPlanGroups?.edges ?? []
@@ -130,7 +95,7 @@ function CartLineItemModal() {
         setLoadingPlans(false);
       }
     })();
-  }, [hasSellingPlanGroups, lineItem.variantId]);
+  }, [hasSellingPlanGroups, lineItem?.variantId]);
 
   // ── Discount handlers ───────────────────────────────────────────────────────
 
@@ -226,24 +191,21 @@ function CartLineItemModal() {
     }
   }
 
-  // ── Remove item ─────────────────────────────────────────────────────────────
 
   async function removeItem() {
     try {
       await shopify.cart.removeLineItem(uuid);
       shopify.toast.show("Item removed from cart");
-      shopify.action.close();
+      // shopify.action.close();
     } catch {
       shopify.toast.show("Failed to remove item");
     }
   }
 
-  // ── Render ──────────────────────────────────────────────────────────────────
 
   return (
     <s-page heading="Edit Line Item">
       <s-scroll-view>
-        {/* ── Item summary ───────────────────────────────────────────────── */}
         <s-section heading="Item Details">
           <s-stack direction="block" gap="small-200">
             <s-text type="strong">{title}</s-text>
@@ -262,7 +224,6 @@ function CartLineItemModal() {
           </s-stack>
         </s-section>
 
-        {/* ── Existing discounts ─────────────────────────────────────────── */}
         {existingDiscounts.length > 0 && (
           <s-section heading="Current Discounts">
             <s-stack direction="block" gap="small-200">
@@ -291,7 +252,6 @@ function CartLineItemModal() {
           </s-section>
         )}
 
-        {/* ── Apply line item discount ───────────────────────────────────── */}
         <s-section heading="Apply Line Item Discount">
           {/* Discount type — radio choice list (single-select) */}
           <s-choice-list
@@ -328,7 +288,6 @@ function CartLineItemModal() {
           </s-button>
         </s-section>
 
-        {/* ── Custom properties ──────────────────────────────────────────── */}
         <s-section heading="Custom Properties">
           {/* Existing properties as rows with inline Remove button */}
           {Object.keys(existingProperties).length > 0 && (
@@ -370,29 +329,20 @@ function CartLineItemModal() {
           </s-button>
         </s-section>
 
-        {/* ── Selling plans ──────────────────────────────────────────────── */}
         {(hasSellingPlanGroups || sellingPlan) && (
           <s-section heading="Selling Plans">
             {loadingPlans ? (
               <s-text>Loading subscription options…</s-text>
             ) : (
-              /*
-               * s-choice-list with single-select radio behaviour.
-               * values prop takes an array; we pass the currently active plan id
-               * or '__one_time__' when no plan is active.
-               * onChange fires immediately on selection (radio), so we call
-               * the Cart API right there via onPlanChange.
-               */
+           
               <s-choice-list values={[selectedPlanId]} onChange={onPlanChange}>
                 {/* One-time option — only shown when not required */}
-                {!requiresSellingPlan && (
-                  <s-choice value="__one_time__">
+                <s-choice value="__one_time__">
                     <s-stack direction="block" gap="small">
                       <s-text type="strong">One-time purchase</s-text>
                       <s-text color="subdued">No recurring subscription</s-text>
                     </s-stack>
                   </s-choice>
-                )}
 
                 {/* Available selling plans */}
                 {availablePlans.map((sp) => (
@@ -411,7 +361,6 @@ function CartLineItemModal() {
           </s-section>
         )}
 
-        {/* ── Remove item ────────────────────────────────────────────────── */}
         <s-section>
           <s-button  onClick={removeItem}>
             Remove from Cart

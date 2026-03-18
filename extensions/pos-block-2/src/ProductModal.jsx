@@ -1,24 +1,3 @@
-/**
- * ProductModal.jsx
- * Target: pos.product-details.action.render
- *
- * Launched from ProductMenuItem on the product details screen.
- * Fetches the product's variants + selling plans via Admin GraphQL,
- * lets staff pick a variant, select a selling plan (subscription),
- * add custom properties, then adds to cart atomically.
- *
- * APIs:
- *   shopify.product.id                      – read-only product context
- *   shopify.cart.addLineItem()
- *   shopify.cart.addLineItemProperties()
- *   shopify.cart.addLineItemSellingPlan()
- *   fetch('shopify:admin/api/graphql.json')  – Direct Admin API
- *
- * References:
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/targets/product-details
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
- */
-
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
@@ -42,7 +21,7 @@ const PRODUCT_QUERY = `#graphql
       variants(first: 10) {
         edges {
           node {
-            id title price sku requiresSellingPlan
+            id title price sku 
             sellingPlanGroups(first: 5) {
               edges {
                 node {
@@ -103,7 +82,6 @@ function ProductModal() {
           title: v.title,
           price: v.price,
           sku: v.sku ?? "",
-          requiresSellingPlan: !!v.requiresSellingPlan,
           sellingPlans: (v.sellingPlanGroups?.edges ?? []).flatMap(
             ({ node: spg }) =>
               (spg.sellingPlans?.edges ?? []).map(({ node: sp }) => ({
@@ -126,7 +104,7 @@ function ProductModal() {
 
   async function addToCart() {
     if (!selectedVariant) return;
-    if (selectedVariant.requiresSellingPlan && !selectedPlan) {
+    if (false) {
       shopify.toast.show(
         "This product requires a selling plan. Please select one.",
       );
@@ -143,19 +121,19 @@ function ProductModal() {
       if (Object.keys(properties).length > 0) {
         await shopify.cart.addLineItemProperties(uuid, properties);
       }
-      if (selectedPlan) {
+      if (false) {
         await shopify.cart.addLineItemSellingPlan({
           lineItemUuid: uuid,
           sellingPlanId: selectedPlan.numericId,
           sellingPlanName: selectedPlan.name,
-          deliveryInterval: selectedPlan.deliveryInterval,
+          frequency: selectedPlan.frequency,
           deliveryIntervalCount: selectedPlan.deliveryIntervalCount,
         });
+        shopify.toast.show(
+          `Added${selectedPlan ? ` · ${selectedPlan.name}` : ""}`,
+        );
       }
-      shopify.toast.show(
-        `Added${selectedPlan ? ` · ${selectedPlan.name}` : ""}`,
-      );
-      shopify.action.close();
+      
     } catch (err) {
       shopify.toast.show(`Error: ${err?.message ?? "Failed to add to cart"}`);
     } finally {
@@ -187,17 +165,22 @@ function ProductModal() {
 
   return (
     <s-page heading={product.title}>
-      <s-scroll-view>
+      <> 
+        <s-box padding="large">
         <s-section heading="Product">
-          <s-text  >title={product.title} subtitle={product.vendor}</s-text>
+          <s-text>
+            title={product.title} subtitle={product.vendor}
+          </s-text>
         </s-section>
 
         {product.variants.length > 1 && (
-          <s-section heading="Select Variant">
+          <s-section heading="Select Variant"  >
             <s-choice-list
               values={[selectedVariant.id]}
               onChange={(e) => {
-                const v = product.variants.find((v) => v.id === e.currentTarget.values[0]);
+                const v = product.variants.find(
+                  (v) => v.id === e?.currentTarget.values[0],
+                );
                 if (v) {
                   setSelectedVariant(v);
                   setSelectedPlan(null);
@@ -208,7 +191,6 @@ function ProductModal() {
                 <s-choice
                   key={v.id}
                   value={v.id}
-             
                 >{`${v.title} — $${v.price}${v.sku ? ` (${v.sku})` : ""}`}</s-choice>
               ))}
             </s-choice-list>
@@ -216,31 +198,26 @@ function ProductModal() {
         )}
 
         <s-section heading="Variant">
-          
-          <s-text  >title={selectedVariant.title}
-            subtitle={`$${selectedVariant.price}${selectedVariant.requiresSellingPlan ? " · Requires subscription" : ""}`}</s-text>
-
+          <s-text>
+            title={selectedVariant.title}
+            subtitle={`$${selectedVariant.price}`}
+          </s-text>
         </s-section>
 
         {hasPlans && (
           <s-section heading="Selling Plans (Subscriptions)">
-            {!selectedVariant.requiresSellingPlan && (
-              <s-list-item
-                title="One-time purchase"
-                subtitle="No recurring subscription"
-                onPress={() => setSelectedPlan(null)}
-                badge={!selectedPlan ? "✓ Selected" : undefined}
-              />
-            )}
-            {selectedVariant.sellingPlans.map((sp) => (
-              <s-list-item
-                key={sp.id}
-                title={sp.name}
-                subtitle={`Every ${sp.deliveryIntervalCount} ${sp.deliveryInterval.toLowerCase()}(s)`}
-                onPress={() => setSelectedPlan(sp)}
-                badge={selectedPlan?.id === sp.id ? "✓ Selected" : undefined}
-              />
-            ))}
+            <s-choice-list values={[selectedPlan]} onChange={(e) => setSelectedPlan(e?.currentTarget?.values?.[0])}>
+              <s-choice value={null}>
+                One-time purchase
+              </s-choice>
+
+              {selectedVariant.sellingPlans.map((sp) => (
+                <s-choice key={sp?.id} value={sp?.id}>
+                  {sp.name}
+                  <s-text>{`Every ${sp?.deliveryIntervalCount} ${sp?.deliveryInterval.toLowerCase()}(s)`}</s-text>
+                </s-choice>
+              ))}
+            </s-choice-list>
           </s-section>
         )}
 
@@ -248,17 +225,17 @@ function ProductModal() {
           <s-text-field
             label="Key"
             value={propKey}
-            onChange={(e) => setPropKey(e.detail.value)}
+            onChange={(e) => setPropKey(e?.target?.value)}
             placeholder="Gift message"
           />
           <s-text-field
             label="Value"
             value={propVal}
-            onChange={(e) => setPropVal(e.detail.value)}
+            onChange={(e) => setPropVal(e?.target?.value)}
             placeholder="Happy Birthday!"
           />
           <s-button
-            onPress={() => {
+            onClick={() => {
               if (!propKey.trim()) return;
               setProperties((prev) => ({ ...prev, [propKey.trim()]: propVal }));
               setPropKey("");
@@ -267,32 +244,33 @@ function ProductModal() {
           >
             + Add Property
           </s-button>
-          {Object.entries(properties).map(([k, v]) => (
-            <s-list-item
-              key={k}
-              title={k}
-              subtitle={v}
-              onPress={() => {
-                const next = { ...properties };
-                delete next[k];
-                setProperties(next);
-              }}
-              badge="✕ Remove"
-            />
-          ))}
+          <s-stack>
+            {Object.entries(properties).map(([k, v]) => (
+              <s-section key={k} heading={k}>
+                <s-clickable
+                  onClick={() => {
+                    const next = { ...properties };
+                    delete next[k];
+                    setProperties(next);
+                  }}
+                >
+                  <s-badge>✕ Remove</s-badge>
+                </s-clickable>
+              </s-section>
+            ))}
+          </s-stack>
         </s-section>
 
         <s-section>
           <s-button
-            kind="primary"
-            onPress={addToCart}
+            variant="primary"
+            onClick={addToCart}
             loading={addingToCart}
-            disabled={selectedVariant.requiresSellingPlan && !selectedPlan}
           >
             Add to Cart{selectedPlan ? ` · ${selectedPlan.name}` : ""}
           </s-button>
-        </s-section>
-      </s-scroll-view>
+        </s-section></s-box>
+      </>
     </s-page>
   );
 }

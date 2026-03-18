@@ -4,9 +4,9 @@ api_version = "2026-01"
 type = "ui_extension"
 # Change the merchant-facing name of the extension in locales/en.default.json
 name = "t:name"
-uid = "86e94aa4-993b-a834-a6de-e5cb7ac9ef7dbc717eb6"
-handle = "customer-scanner"
-description = "Capture image"
+uid = "149c1d23-b280-f51c-42ee-3a558fd9cf8a2b8ba0cd"
+handle = "pos-smart-grid"
+description = "A preact POS UI extension"
 
 # module: file that contains your extension’s source code
 # target: location where your extension appears in POS

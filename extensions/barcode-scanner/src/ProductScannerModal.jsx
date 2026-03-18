@@ -63,7 +63,6 @@ const FullScreenScanner = () => {
         console.log("Product not found");
         setScanStatus("Product not found");
         shopify.toast.show("Product not found", { duration: 2500 });
-
         // setTimeout(resetScanner, 2000);
         return;
       }
@@ -71,9 +70,8 @@ const FullScreenScanner = () => {
       // Product found → add to cart
       // const variantId = product.productVariant.id?.split("/")?.pop();
       const productId = product.productVariant.product.id?.split("/")?.pop();
-      if(product?.hasOptions){
+      if(productId && variantId ){
         navigation.navigate(`shopify:point-of-sale/products/${productId}/variants/${variantId}`);
-
       }else {
         
       }
@@ -88,9 +86,9 @@ const FullScreenScanner = () => {
       
       // Optional navigation
 
-      setTimeout(() => {
-        shopify.extension.close();
-      }, 1000);
+      // setTimeout(() => {
+      //   shopify.extension.close();
+      // }, 1000);
     } catch (error) {
       console.error("Scan flow failed:", error);
       setScanStatus("Operation failed");
@@ -174,14 +172,12 @@ const FullScreenScanner = () => {
   const closeScanner = () => {
     setIsProcessing(false);
     shopify.scanner.hideCameraScanner();
-    shopify.extension.close();
+    // shopify.extension.close();
   };
 
   return (
     <s-page heading="Scan Product">
-      <s-button slot="secondary-actions" onClick={closeScanner}>
-        Close
-      </s-button>
+      
       {isProcessing && (
         <s-box>
           <s-stack>

@@ -86,7 +86,7 @@ const templateSchema = new mongoose.Schema(
     },
     paperBrand: String,
     paperModel: String,
-    dimension:{type:Object,default:{}},
+    dimension: { type: Object, default: {} },
     settings: Object,
     lines: [lineSchema],
     advancedElements: [
@@ -141,6 +141,28 @@ const printJobSchema = new mongoose.Schema(
     },
   },
 );
+const settingSchema = new mongoose.Schema(
+  {
+    shop: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    fields: {
+      type: Array,
+      default:[],
+    },
+    discounts: {
+      type: Object,
+    },
+  },
+  {
+    timestamps: {
+      createdAt: true,
+      updatedAt: false,
+    },
+  },
+);
 
 // Compound index for shop + template templateName uniqueness
 templateSchema.index({ shop: 1, templateName: 1 }, { unique: true });
@@ -156,6 +178,8 @@ const templateModel =
   mongoose.models?.templates || mongoose.model("templates", templateSchema);
 const printJobModel =
   mongoose.models?.PrintJob || mongoose.model("PrintJob", printJobSchema);
+const settingsModel =
+  mongoose.models?.settings || mongoose.model("settings", settingSchema);
 
 export {
   sessionModel,
@@ -163,4 +187,5 @@ export {
   merchantInfoModel,
   templateModel,
   printJobModel,
+  settingsModel,
 };

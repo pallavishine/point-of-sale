@@ -1,21 +1,4 @@
-/**
- * HomeModal.jsx
- * Target: pos.home.modal.render
- *
- * Full-screen modal with 4 tabs:
- *   1. Customer   – search / create, attach to cart
- *   2. Products   – search via Admin GraphQL, add to cart with selling plans
- *   3. Discounts  – cart-level % / fixed / code discounts
- *   4. Cart       – live cart summary
- *
- * APIs:
- *   shopify.cart.*                           Cart API (2026-01)
- *   fetch('shopify:admin/api/graphql.json')  Direct Admin API
- *
- * References:
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest/target-apis/contextual-apis/cart-api
- *   https://shopify.dev/docs/api/pos-ui-extensions/latest#direct-api-access
- */
+
 
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
