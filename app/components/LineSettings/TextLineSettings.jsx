@@ -14,27 +14,27 @@ export const TextLineSettings = ({ line, onChange }) => (
         <s-option value="right">Right</s-option>
       </s-select>
   
-      <s-text-field
+      <s-number-field
         label="Font Size"
-        type="number"
         value={line.settings.fontSize}
         onChange={(e) => onChange('settings.fontSize', parseInt(e.target.value))}
+        onInput={(e) => onChange('settings.fontSize', parseInt(e.target.value))}
       />
   
       <s-color-field
         label="Text Color"
         value={line.settings.color}
         onChange={(color) => onChange('settings.color', color)}
+        onInput={(color) => onChange('settings.color', color)}
       />
   </s-stack>
       <s-divider />
       <s-heading level={5}>Margins</s-heading>
       <s-grid gridTemplateColumns="repeat(4, 4fr)" gap="small">
         {['top', 'bottom', 'left', 'right'].map((side) => (
-          <s-text-field
+          <s-number-field
             key={side}
             label={side.charAt(0).toUpperCase() + side.slice(1)}
-            type="number"
             value={line.settings.margin?.[side] || 0}
             suffix="in"
             min="0"

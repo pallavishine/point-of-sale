@@ -16,19 +16,21 @@ export const BarcodeSettings = ({ line, onChange }) => (
         label="Hide barcode value"
         checked={!line.settings.showValue}
         onChange={(e) => onChange('settings.showValue', !e.target.checked)}
+        onInput={(e) => onChange('settings.showValue', !e.target.checked)}
       />
   
       <s-color-field
         label="Symbol Color"
         value={line.settings.color}
         onChange={(color) => onChange('settings.color', color)}
+        onInput={(color) => onChange('settings.color', color)}
       />
   
-      <s-text-field
+      <s-number-field
         label="Font Size"
-        type="number"
         value={line.settings.fontSize}
         onChange={(e) => onChange('settings.fontSize', parseInt(e.target.value))}
+        onInput={(e) => onChange('settings.fontSize', parseInt(e.target.value))}
       />
     </s-stack>
   );

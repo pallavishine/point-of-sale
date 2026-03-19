@@ -21,6 +21,7 @@ function CartLineItemModal() {
   const [discountType, setDiscountType] = useState("Percentage");
   const [discountTitle, setDiscountTitle] = useState("");
   const [discountAmount, setDiscountAmount] = useState("");
+  const [discountCode, setDiscountCode] = useState("");
   const [applyingDiscount, setApplyingDiscount] = useState(false);
 
   const [propKey, setPropKey] = useState("");

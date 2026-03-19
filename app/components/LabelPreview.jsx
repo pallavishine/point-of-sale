@@ -74,7 +74,6 @@ const LabelPreview = ({ lines, shop }) => {
         }}
       ></div> */}
 
-
       {lines?.map((line, index) => {
         // console.log("line=====>", line);
 
@@ -84,21 +83,31 @@ const LabelPreview = ({ lines, shop }) => {
             {line.id == "line-1" && line.fields?.length && (
               <div
                 style={{
-                  textAlign: "center",
-                  marginBottom: "5px",
+                  textAlign: line.settings?.align ?? "center",
+                  marginTop: `${line.settings?.marginTop}px` ?? "5px",
+                  marginBottom: `${line.settings?.marginBottom}px` ?? "5px",
                   paddingBottom: "5px",
                   borderBottom: "2px solid #f0f0f0",
                 }}
               >
                 <div
                   style={{
-                    fontSize: "14px",
+                    textAlign: line.settings?.align ?? "center",
+                    marginTop: `${line.settings?.marginTop}px` ?? "5px",
+                    marginBottom: `${line.settings?.marginBottom}px` ?? "5px",
+                    fontSize: `${line.settings?.fontSize}px` ?? "14px",
                     fontWeight: 800,
                     letterSpacing: "1px",
-                    color: "#1a1a1a",
+                    color: line.settings?.color ?? "#1a1a1a",
                   }}
                 >
-                  {shop?.split(".")[0]}
+                  {line.fields.map((elm, index) => (
+                    <span key={elm.id}>
+                      {elm?.id == "storeName"
+                        ? `${shop?.split(".")[0]} `
+                        : elm.default}
+                    </span>
+                  ))}
                 </div>
               </div>
             )}
@@ -106,11 +115,14 @@ const LabelPreview = ({ lines, shop }) => {
             {line.id == "line-2" && line.fields?.length && (
               <div
                 style={{
-                  fontSize: "10px",
-                  fontWeight: 700,
-                  color: "#000",
-                  lineHeight: 1,
+                  textAlign: line.settings?.align ?? "center",
                   margin: "5px 0",
+                  marginTop: `${line.settings?.marginTop}px` ?? "5px",
+                  marginBottom: `${line.settings?.marginBottom}px` ?? "5px",
+                  fontSize: `${line.settings?.fontSize}px` ?? "9px",
+                  color: line.settings?.color ?? "#1a1a1a",
+                  fontWeight: 700,
+                  lineHeight: 1,
                   paddingBlock: "5px",
                   textTransform: "uppercase",
                 }}
@@ -197,25 +209,25 @@ const LabelPreview = ({ lines, shop }) => {
                   if (field.id == "barcodeLines") {
                     return (
                       <div
-                      key={index}
-                      style={{
-                        display: "flex",
-                        justifyContent: "center",
-                        gap: "2px",
-                        height: "80px",
-                        alignItems: "flex-end",
-                      }}
-                    >
-                      <img
-                        src={`https://barcode.tec-it.com/barcode.ashx?data=44213201043621&code=code128&dpi=96&imagetype=png`}
+                        key={index}
                         style={{
-                          height: "100%",
-                          width: "auto",
-                          objectFit: "contain",
+                          display: "flex",
+                          justifyContent: "center",
+                          gap: "2px",
+                          height: "80px",
+                          alignItems: "flex-end",
                         }}
-                        alt="barcode"
-                      />
-                    </div>
+                      >
+                        <img
+                          src={`https://barcode.tec-it.com/barcode.ashx?data=44213201043621&code=code128&dpi=96&imagetype=png`}
+                          style={{
+                            height: "100%",
+                            width: "auto",
+                            objectFit: "contain",
+                          }}
+                          alt="barcode"
+                        />
+                      </div>
                     );
                   }
                   {
