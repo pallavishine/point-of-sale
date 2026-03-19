@@ -209,25 +209,7 @@ export const PRODUCT_SEARCH_QUERY = `#graphql
             edges {
               node {
                 id title price sku
-                sellingPlanGroups(first: 5) {
-                  edges {
-                    node {
-                      name
-                      sellingPlans(first: 10) {
-                        edges {
-                          node {
-                            id name
-                            deliveryPolicy {
-                              ... on SellingPlanRecurringDeliveryPolicy {
-                                interval intervalCount
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
+                
               }
             }
           }

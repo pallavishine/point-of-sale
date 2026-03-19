@@ -14,10 +14,10 @@ export function Extension() {
         slot="secondary-actions"
         onClick={() => shopify.action.presentModal()}
       >
-        {i18n.translate('open_action')}
+        Main Button
       </s-button>
       <s-box padding="large">
-        <s-text>{i18n.translate('block_content')}</s-text>
+        <s-text>Main Button</s-text>
       </s-box>
     </s-pos-block>
   );

@@ -19,7 +19,7 @@ const PRODUCT_QUERY = `#graphql
     product(id: $id) {
       title
       vendor
-      requiresSellingPlan
+      
       variants(first: 10) {
         edges {
           node {
@@ -27,27 +27,7 @@ const PRODUCT_QUERY = `#graphql
             title
             price
             sku
-            sellingPlanGroups(first: 5) {
-              edges {
-                node {
-                  name
-                  sellingPlans(first: 10) {
-                    edges {
-                      node {
-                        id
-                        name
-                        deliveryPolicy {
-                          ... on SellingPlanRecurringDeliveryPolicy {
-                            interval
-                            intervalCount
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+           
           }
         }
       }
@@ -63,12 +43,10 @@ function ProductModal() {
   const [productData, setProductData] = useState(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
-  const [selectedPlan, setSelectedPlan] = useState(null);
   const [customProperties, setCustomProperties] = useState({});
   const [propertyKey, setPropertyKey] = useState("");
   const [propertyValue, setPropertyValue] = useState("");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [requiresSellingPlan, setrequiresSellingPlan] = useState(false);
 
   const productNumericId = shopify.product.id;
 
@@ -85,31 +63,10 @@ function ProductModal() {
           shopify.toast.show("Failed to load product");
           return;
         }
-        setrequiresSellingPlan(productNode?.requiresSellingPlan);
         const variantEdges = productNode.variants?.edges ?? [];
 
         const formattedVariants = variantEdges.map(({ node: variantNode }) => {
-          const sellingPlans = [];
 
-          const groupEdges = variantNode.sellingPlanGroups?.edges ?? [];
-
-          for (let i = 0; i < groupEdges.length; i++) {
-            const groupNode = groupEdges[i].node;
-            const planEdges = groupNode.sellingPlans?.edges ?? [];
-
-            for (let j = 0; j < planEdges.length; j++) {
-              const planNode = planEdges[j].node;
-
-              sellingPlans.push({
-                id: planNode.id,
-                numericId: numericId(planNode.id),
-                name: planNode.name,
-                deliveryInterval: planNode.deliveryPolicy?.interval ?? "MONTH",
-                deliveryIntervalCount:
-                  planNode.deliveryPolicy?.intervalCount ?? 1,
-              });
-            }
-          }
 
           return {
             id: variantNode.id,
@@ -117,7 +74,6 @@ function ProductModal() {
             title: variantNode.title,
             price: variantNode.price,
             sku: variantNode.sku ?? "",
-            sellingPlans: sellingPlans,
           };
         });
 
@@ -139,12 +95,6 @@ function ProductModal() {
   async function handleAddToCart() {
     if (!selectedVariant) return;
 
-    if (requiresSellingPlan && !selectedPlan) {
-      shopify.toast.show(
-        "This product requires a selling plan. Please select one.",
-      );
-      return;
-    }
 
     setIsAddingToCart(true);
 
@@ -166,18 +116,7 @@ function ProductModal() {
         );
       }
 
-      if (selectedPlan) {
-        await shopify.cart.addLineItemSellingPlan({
-          lineItemUuid: lineItemUuid,
-          sellingPlanId: selectedPlan.numericId,
-          sellingPlanName: selectedPlan.name,
-          deliveryIntervalCount: selectedPlan.deliveryIntervalCount,
-        });
-
-        shopify.toast.show(
-          `Added${selectedPlan ? ` · ${selectedPlan.name}` : ""}`,
-        );
-      }
+      
 
       // shopify.action.close();
     } catch (error) {
@@ -215,7 +154,6 @@ function ProductModal() {
     );
   }
 
-  const hasSellingPlans = selectedVariant.sellingPlans.length > 0;
 
   return (
     <s-page heading={productData.title}>
@@ -239,7 +177,6 @@ function ProductModal() {
 
                 if (variant) {
                   setSelectedVariant(variant);
-                  setSelectedPlan(null);
                 }
               }}
             >
@@ -259,40 +196,7 @@ function ProductModal() {
           <s-text>Price: ${selectedVariant.price}</s-text>
         </s-section>
 
-        {hasSellingPlans && (
-          <s-section heading="Selling Plans">
-            <s-choice-list
-              values={[selectedPlan?.id || "one-time"]}
-              onChange={(event) => {
-                const selectedValue = event.currentTarget.values[0];
-
-                if (selectedValue === "one-time") {
-                  setSelectedPlan(null);
-                  return;
-                }
-
-                const plan = selectedVariant.sellingPlans.find(
-                  (planItem) => planItem.id === selectedValue,
-                );
-
-                if (plan) {
-                  setSelectedPlan(plan);
-                }
-              }}
-            >
-              <s-choice value="one-time">One-time purchase</s-choice>
-
-              {selectedVariant.sellingPlans.map((planItem) => (
-                <s-choice key={planItem.id} value={planItem.id}>
-                  {planItem.name}
-                  <s-text>
-                    {`Every ${planItem.deliveryIntervalCount} ${planItem.deliveryInterval.toLowerCase()}(s)`}
-                  </s-text>
-                </s-choice>
-              ))}
-            </s-choice-list>
-          </s-section>
-        )}
+       
 
         <s-section heading="Custom Properties">
           <s-box paddingBlock="small">
@@ -361,7 +265,6 @@ function ProductModal() {
                 loading={isAddingToCart}
               >
                 Add to Cart
-                {selectedPlan ? ` · ${selectedPlan.name}` : ""}
               </s-button>
             </s-stack>
           </s-box>

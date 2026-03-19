@@ -9,17 +9,7 @@ handle = "pos-block-2"
 
 # module: path to the file that contains your extension’s source code
 # target: string that describes where your extension appears in POS
-description = "Full POS workflow"
-
-
-[[extensions.targeting]]
-target = "pos.home.tile.render"
-module = "./src/Tile.jsx"
-
-[[extensions.targeting]]
-target = "pos.home.modal.render"
-module = "./src/HomeModal.jsx"
-
+description = "POS workflow"
 
 [[extensions.targeting]]
 target = "pos.product-details.action.menu-item.render"

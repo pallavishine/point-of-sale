@@ -12,7 +12,7 @@ function Extension() {
     <s-page heading='POS action'>
       <s-scroll-box>
         <s-box padding="small">
-          <s-text>{i18n.translate('welcome', {flavor: 'preact'})}</s-text>
+          <s-text>Hellooooo</s-text>
         </s-box>
       </s-scroll-box>
     </s-page>
