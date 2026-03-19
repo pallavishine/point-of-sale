@@ -2,37 +2,6 @@ import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { gql, numericId } from "./helpers";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const VARIANT_SELLING_PLANS_QUERY = `#graphql
-  query GetVariantPlans($id: ID!) {
-    productVariant(id: $id) {
-      sellingPlanGroups(first: 5) {
-        edges {
-          node {
-            name
-            sellingPlans(first: 10) {
-              edges {
-                node {
-                  id name
-                  deliveryPolicy {
-                    ... on SellingPlanRecurringDeliveryPolicy {
-                      interval
-                      intervalCount
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-// ─── Root ─────────────────────────────────────────────────────────────────────
-
 export default async () => {
   render(<CartLineItemModal />, document.body);
 };
@@ -46,58 +15,17 @@ function CartLineItemModal() {
   const price = lineItem?.price;
   const quantity = lineItem?.quantity;
   const sku = lineItem?.sku;
-  const sellingPlan = lineItem?.sellingPlan;
-  const requiresSellingPlan = lineItem?.requiresSellingPlan;
-  const hasSellingPlanGroups = lineItem?.hasSellingPlanGroups ?? false;
   const existingProperties = lineItem?.properties ?? {};
   const existingDiscounts = lineItem?.discounts ?? [];
 
-  // ── Discount state ──────────────────────────────────────────────────────────
   const [discountType, setDiscountType] = useState("Percentage");
   const [discountTitle, setDiscountTitle] = useState("");
   const [discountAmount, setDiscountAmount] = useState("");
   const [applyingDiscount, setApplyingDiscount] = useState(false);
 
-  // ── Properties state ────────────────────────────────────────────────────────
   const [propKey, setPropKey] = useState("");
   const [propVal, setPropVal] = useState("");
   const [addingProp, setAddingProp] = useState(false);
-
-  // ── Selling plan state ──────────────────────────────────────────────────────
-  const [availablePlans, setAvailablePlans] = useState([]);
-  const [selectedPlanId, setSelectedPlanId] = useState(
-    sellingPlan ? String(sellingPlan.id) : "__one_time__",
-  );
-  const [loadingPlans, setLoadingPlans] = useState(false);
-
-  useEffect(() => {
-    if (!hasSellingPlanGroups || !lineItem?.variantId) return;
-    (async () => {
-      setLoadingPlans(true);
-      try {
-        const data = await gql(VARIANT_SELLING_PLANS_QUERY, {
-          id: `gid://shopify/ProductVariant/${lineItem?.variantId}`,
-        });
-        const plans = (
-          data?.data?.productVariant?.sellingPlanGroups?.edges ?? []
-        ).flatMap(({ node: spg }) =>
-          (spg.sellingPlans?.edges ?? []).map(({ node: sp }) => ({
-            id: sp.id,
-            numericId: numericId(sp.id),
-            name: sp.name,
-            deliveryInterval: sp.deliveryPolicy?.interval ?? "MONTH",
-            deliveryIntervalCount: sp.deliveryPolicy?.intervalCount ?? 1,
-          })),
-        );
-        setAvailablePlans(plans);
-      } finally {
-        setLoadingPlans(false);
-      }
-    })();
-  }, [hasSellingPlanGroups, lineItem?.variantId]);
-
-  // ── Discount handlers ───────────────────────────────────────────────────────
-
   async function applyDiscount() {
     if (!discountTitle.trim() || !discountAmount) {
       shopify.toast.show("Title and amount required");
@@ -137,7 +65,6 @@ function CartLineItemModal() {
     }
   }
 
-  // ── Property handlers ───────────────────────────────────────────────────────
 
   async function addProperty() {
     if (!propKey.trim()) return;
@@ -165,37 +92,7 @@ function CartLineItemModal() {
     }
   }
 
-  // ── Selling plan handler ────────────────────────────────────────────────────
 
-  async function onPlanChange(e) {
-    const chosenId = e.currentTarget.values?.[0] ?? "__one_time__";
-    setSelectedPlanId(chosenId);
-
-    if (chosenId === "__one_time__") {
-      // Switch to one-time purchase
-      try {
-        await shopify.cart.removeLineItemSellingPlan(uuid);
-        shopify.toast.show("Subscription removed");
-      } catch (err) {
-        shopify.toast.show(`Failed: ${err?.message}`);
-      }
-    } else {
-      const sp = availablePlans.find((p) => p.id === chosenId);
-      if (!sp) return;
-      try {
-        await shopify.cart.addLineItemSellingPlan({
-          lineItemUuid: uuid,
-          sellingPlanId: sp.numericId,
-          sellingPlanName: sp.name,
-          deliveryInterval: sp.deliveryInterval,
-          deliveryIntervalCount: sp.deliveryIntervalCount,
-        });
-        shopify.toast.show(`Selling plan set: ${sp.name}`);
-      } catch (err) {
-        shopify.toast.show(`Failed: ${err?.message}`);
-      }
-    }
-  }
 
   async function removeItem() {
     try {
@@ -218,13 +115,7 @@ function CartLineItemModal() {
               {price ? `  ·  $${price}` : ""}
               {sku ? `  ·  SKU: ${sku}` : ""}
             </s-text>
-            {sellingPlan && (
-              <s-text color="subdued">
-                📅 {sellingPlan.name} — Every{" "}
-                {sellingPlan.deliveryIntervalCount}{" "}
-                {(sellingPlan.deliveryInterval ?? "").toLowerCase()}(s)
-              </s-text>
-            )}
+          
           </s-stack>
         </s-section>
 
@@ -263,9 +154,12 @@ function CartLineItemModal() {
             >
               <s-choice value="Percentage">
                 <s-text>Percentage %</s-text>
-              </s-choice>
+              </s-choice> 
               <s-choice value="FixedAmount">
                 <s-text>Fixed Amount $</s-text>
+              </s-choice>
+              <s-choice value="code">
+                <s-text>Coupon Code</s-text>
               </s-choice>
             </s-choice-list>
 
@@ -338,46 +232,7 @@ function CartLineItemModal() {
           </s-stack>
         </s-section>
 
-        {(hasSellingPlanGroups || sellingPlan) && (
-          <s-section heading="Selling Plans">
-            {loadingPlans ? (
-              
-                <s-box padding="small">
-                  <s-stack
-                    direction="inline"
-                    justifyContent="center"
-                    alignItems="center"
-                  >
-                    <s-text>Loading subscription options…</s-text>
-                  </s-stack>
-                </s-box>
-              
-            ) : (
-              <s-choice-list values={[selectedPlanId]} onChange={onPlanChange}>
-                {/* One-time option — only shown when not required */}
-                <s-choice value="__one_time__">
-                  <s-stack gap="small">
-                    <s-text type="strong">One-time purchase</s-text>
-                    <s-text color="subdued">No recurring subscription</s-text>
-                  </s-stack>
-                </s-choice>
-
-                {/* Available selling plans */}
-                {availablePlans.map((sp) => (
-                  <s-choice key={sp.id} value={sp.id}>
-                    <s-stack gap="small">
-                      <s-text type="strong">{sp.name}</s-text>
-                      <s-text color="subdued">
-                        Every {sp.deliveryIntervalCount}{" "}
-                        {sp.deliveryInterval.toLowerCase()}(s)
-                      </s-text>
-                    </s-stack>
-                  </s-choice>
-                ))}
-              </s-choice-list>
-            )}
-          </s-section>
-        )}
+     
 
         <s-stack paddingBlock="small">
           <s-button onClick={removeItem}>Remove from Cart</s-button>
