@@ -2955,9 +2955,17 @@ export const LABEL_FIELDS_BY_LINE = [
         default: "Store Name",
         settings: {},
       },
+      {
+        id: "customText",
+        label: "Custom Text",
+        icon: "text",
+        enabled: true,
+        order: 1,
+        default: "Custom Text",
+        settings: {},
+      },
     ],
     settings: {
-      format: "code128",
       showValue: true,
       color: "#000000",
       fontSize: 18,
@@ -3099,7 +3107,6 @@ export const LABEL_FIELDS_BY_LINE = [
       },
     ],
     settings: {
-      format: "code128",
       showValue: true,
       color: "#000000",
       fontSize: 18,
@@ -3110,7 +3117,7 @@ export const LABEL_FIELDS_BY_LINE = [
     label: "Metadata",
     type: "text",
     enabled: true,
-    maxFieldSelected: 4,
+    maxFieldSelected: 2,
     fields: [
       {
         id: "sku",
@@ -3139,34 +3146,26 @@ export const LABEL_FIELDS_BY_LINE = [
         default: "snowboard,minimal",
         settings: {},
       },
-      {
-        id: "collection",
-        label: "Collection",
-        icon: "collection",
-        enabled: false,
-        order: 2,
-        default: "Winter Sports",
-        settings: {},
-      },
+  
 
-      {
-        id: "weight",
-        label: "Weight",
-        icon: "measurement-weight",
-        enabled: false,
-        order: 4,
-        default: "7.5 kg",
-        settings: {},
-      },
-      {
-        id: "dimensions",
-        label: "Dimensions",
-        icon: "measurement-size",
-        enabled: false,
-        order: 5,
-        default: "155 x 30 x 10 cm",
-        settings: {},
-      },
+      // {
+      //   id: "weight",
+      //   label: "Weight",
+      //   icon: "measurement-weight",
+      //   enabled: false,
+      //   order: 4,
+      //   default: "7.5 kg",
+      //   settings: {},
+      // },
+      // {
+      //   id: "dimensions",
+      //   label: "Dimensions",
+      //   icon: "measurement-size",
+      //   enabled: false,
+      //   order: 5,
+      //   default: "155 x 30 x 10 cm",
+      //   settings: {},
+      // },
     ],
     settings: {
       align: "center",
@@ -3216,7 +3215,7 @@ export const LABEL_FIELDS_BY_LINE = [
 
 
 
-export const LABEL_FIELDS = [
+ const LABEL_FIELDS = [
   { id: "sku", label: "SKU", icon: "barcode", enabled: false },
   {
     id: "productTitle",

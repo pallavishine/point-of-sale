@@ -19,26 +19,23 @@ export const LineItem = ({
       <s-stack gap="small">
         <s-stack direction="inline" justifyContent="space-between">
           <s-stack direction="inline" alignItems="center" gap="small">
-            <s-text weight="medium" style={{ flex: 1 }}>
+            <s-text weight="medium" >
               {line.label}
             </s-text>
             <s-badge variant={!inValid ? 'success' : 'critical'}>
               {enabledCount}/{maxFields}
             </s-badge>
           </s-stack>
-          <s-stack direction="inline" gap="small">
+          <s-stack direction="inline" gap="small"  >
             <s-icon
+              tone="auto"
               type="settings"
               onClick={() => onSettingsClick(line.id)}
-              style={{
-                cursor: 'pointer',
-                color: isActive ? '#0066cc' : 'inherit',
-              }}
+             
             />
             <s-icon
               type={line.enabled ? 'eye' : 'eye-closed'}
               onClick={() => onToggleField(line.id, field.id)}
-              style={{ cursor: 'pointer' }}
             />
           </s-stack>
         </s-stack>
@@ -50,9 +47,8 @@ export const LineItem = ({
             padding="base"
             border="base"
             // background="surface"
-            style={{ marginTop: '12px' }}
           >
-            <LineSettings line={line} onUpdate={updateLineSettings} />
+            <LineSettings line={line} updateLineSettings={updateLineSettings} />
           </s-box>
         ) : (
           <s-stack vertical gap="xtiny">
@@ -82,12 +78,6 @@ export const LineItem = ({
                   //     >
                         <s-box
                           padding="small"
-                          style={{
-                            border: '1px solid #e0e0e0',
-                            borderRadius: '4px',
-                            backgroundColor: isEnabled ? 'white' : '#f9f9f9',
-                            // boxShadow: snapshot.isDragging ? '0 5px 15px rgba(0,0,0,0.2)' : 'none',
-                          }}
                         >
                           <s-stack
                             direction="inline"
@@ -121,7 +111,7 @@ export const LineItem = ({
                               
                               <s-text
                                 weight={isEnabled ? 'medium' : 'regular'}
-                                style={{ flex: 1 }}
+                                
                               >
                                 {field.label}
                               </s-text>
@@ -133,7 +123,6 @@ export const LineItem = ({
                                   if (!isEnabled && inValid) return;
                                   onToggleField(line.id, field.id);
                                 }}
-                                style={{ cursor: 'pointer' }}
                               />
                               
                               <s-icon
@@ -142,7 +131,6 @@ export const LineItem = ({
                                   e.stopPropagation();
                                   onRemoveField(line.id, field.id);
                                 }}
-                                style={{ cursor: 'pointer', color: '#d82c0d' }}
                               />
                             </s-stack>
                           </s-stack>
@@ -154,7 +142,7 @@ export const LineItem = ({
               })}
 
             {/* Add Field Button */}
-            <s-stack direction="inline" justifyContent="end">
+            {/* <s-stack direction="inline" justifyContent="end">
               <s-button
                 variant="secondary"
                 inlineSize="fit-content"
@@ -165,7 +153,7 @@ export const LineItem = ({
               >
                 + Add Field
               </s-button>
-            </s-stack>
+            </s-stack> */}
           </s-stack>
         )}
       </s-stack>

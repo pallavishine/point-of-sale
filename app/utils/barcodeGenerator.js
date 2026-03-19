@@ -32,8 +32,6 @@ export const generateBarcode = (id) => {
   const r1_val = r1();
   const r2_val = r1();
 
-  // Format: PREFIX(1) + last5(5) + r1(1) + middle4(4) + r2(1) + first5(5) + CHECKSUM(1)
-  // Total: 1 + 5 + 1 + 4 + 1 + 5 + 1 = 18 digits
   const baseBarcode = PREFIX + last5 + r1_val + middle4 + r2_val + first5;
 
   return baseBarcode + checksum(baseBarcode);
