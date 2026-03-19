@@ -34,7 +34,7 @@ export default function Auth() {
               label="Shop domain"
               details="example.myshopify.com"
               value={shop}
-              onChange={(e) => setShop(e.currentTarget.value)}
+              onChange={(e) => setShop(e.target?.value)}
               autocomplete="on"
               error={errors.shop}
             ></s-text-field>

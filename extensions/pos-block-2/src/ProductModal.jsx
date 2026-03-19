@@ -1,27 +1,32 @@
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
 
-function numericId(gid) {
-  return parseInt(gid.split("/").pop() ?? "0", 10);
+function numericId(globalId) {
+  return parseInt(globalId.split("/").pop() ?? "0", 10);
 }
 
 async function gql(query, variables) {
-  const res = await fetch("shopify:admin/api/graphql.json", {
+  const response = await fetch("shopify:admin/api/graphql.json", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query, variables }),
   });
-  return res.json();
+  return response.json();
 }
 
 const PRODUCT_QUERY = `#graphql
   query GetProduct($id: ID!) {
     product(id: $id) {
-      title vendor
+      title
+      vendor
+      requiresSellingPlan
       variants(first: 10) {
         edges {
           node {
-            id title price sku 
+            id
+            title
+            price
+            sku
             sellingPlanGroups(first: 5) {
               edges {
                 node {
@@ -29,10 +34,12 @@ const PRODUCT_QUERY = `#graphql
                   sellingPlans(first: 10) {
                     edges {
                       node {
-                        id name
+                        id
+                        name
                         deliveryPolicy {
                           ... on SellingPlanRecurringDeliveryPolicy {
-                            interval intervalCount
+                            interval
+                            intervalCount
                           }
                         }
                       }
@@ -53,168 +60,234 @@ export default async () => {
 };
 
 function ProductModal() {
-  const [product, setProduct] = useState(null);
-  const [loadingProduct, setLoadingProduct] = useState(true);
+  const [productData, setProductData] = useState(null);
+  const [isLoadingProduct, setIsLoadingProduct] = useState(true);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [properties, setProperties] = useState({});
-  const [propKey, setPropKey] = useState("");
-  const [propVal, setPropVal] = useState("");
-  const [addingToCart, setAddingToCart] = useState(false);
+  const [customProperties, setCustomProperties] = useState({});
+  const [propertyKey, setPropertyKey] = useState("");
+  const [propertyValue, setPropertyValue] = useState("");
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [requiresSellingPlan, setrequiresSellingPlan] = useState(false);
 
   const productNumericId = shopify.product.id;
 
   useEffect(() => {
     (async () => {
       try {
-        const data = await gql(PRODUCT_QUERY, {
+        const responseData = await gql(PRODUCT_QUERY, {
           id: `gid://shopify/Product/${productNumericId}`,
         });
-        const p = data?.data?.product;
-        if (!p) {
+
+        const productNode = responseData?.data?.product;
+
+        if (!productNode) {
           shopify.toast.show("Failed to load product");
           return;
         }
+        setrequiresSellingPlan(productNode?.requiresSellingPlan);
+        const variantEdges = productNode.variants?.edges ?? [];
 
-        const variants = (p.variants?.edges ?? []).map(({ node: v }) => ({
-          id: v.id,
-          numericId: numericId(v.id),
-          title: v.title,
-          price: v.price,
-          sku: v.sku ?? "",
-          sellingPlans: (v.sellingPlanGroups?.edges ?? []).flatMap(
-            ({ node: spg }) =>
-              (spg.sellingPlans?.edges ?? []).map(({ node: sp }) => ({
-                id: sp.id,
-                numericId: numericId(sp.id),
-                name: sp.name,
-                deliveryInterval: sp.deliveryPolicy?.interval ?? "MONTH",
-                deliveryIntervalCount: sp.deliveryPolicy?.intervalCount ?? 1,
-              })),
-          ),
-        }));
+        const formattedVariants = variantEdges.map(({ node: variantNode }) => {
+          const sellingPlans = [];
 
-        setProduct({ title: p.title, vendor: p.vendor, variants });
-        setSelectedVariant(variants[0] ?? null);
+          const groupEdges = variantNode.sellingPlanGroups?.edges ?? [];
+
+          for (let i = 0; i < groupEdges.length; i++) {
+            const groupNode = groupEdges[i].node;
+            const planEdges = groupNode.sellingPlans?.edges ?? [];
+
+            for (let j = 0; j < planEdges.length; j++) {
+              const planNode = planEdges[j].node;
+
+              sellingPlans.push({
+                id: planNode.id,
+                numericId: numericId(planNode.id),
+                name: planNode.name,
+                deliveryInterval: planNode.deliveryPolicy?.interval ?? "MONTH",
+                deliveryIntervalCount:
+                  planNode.deliveryPolicy?.intervalCount ?? 1,
+              });
+            }
+          }
+
+          return {
+            id: variantNode.id,
+            numericId: numericId(variantNode.id),
+            title: variantNode.title,
+            price: variantNode.price,
+            sku: variantNode.sku ?? "",
+            sellingPlans: sellingPlans,
+          };
+        });
+
+        setProductData({
+          title: productNode.title,
+          vendor: productNode.vendor,
+          variants: formattedVariants,
+        });
+
+        if (formattedVariants.length > 0) {
+          setSelectedVariant(formattedVariants[0]);
+        }
       } finally {
-        setLoadingProduct(false);
+        setIsLoadingProduct(false);
       }
     })();
   }, [productNumericId]);
 
-  async function addToCart() {
+  async function handleAddToCart() {
     if (!selectedVariant) return;
-    if (false) {
+
+    if (requiresSellingPlan && !selectedPlan) {
       shopify.toast.show(
         "This product requires a selling plan. Please select one.",
       );
       return;
     }
-    setAddingToCart(true);
+
+    setIsAddingToCart(true);
+
     try {
-      const uuid = await shopify.cart.addLineItem(selectedVariant.numericId, 1);
-      if (!uuid) {
-        shopify.toast.show("Item not added (oversell guard dismissed)");
+      const lineItemUuid = await shopify.cart.addLineItem(
+        selectedVariant.numericId,
+        1,
+      );
+
+      if (!lineItemUuid) {
+        shopify.toast.show("Item not added");
         return;
       }
 
-      if (Object.keys(properties).length > 0) {
-        await shopify.cart.addLineItemProperties(uuid, properties);
+      if (Object.keys(customProperties).length > 0) {
+        await shopify.cart.addLineItemProperties(
+          lineItemUuid,
+          customProperties,
+        );
       }
-      if (false) {
+
+      if (selectedPlan) {
         await shopify.cart.addLineItemSellingPlan({
-          lineItemUuid: uuid,
+          lineItemUuid: lineItemUuid,
           sellingPlanId: selectedPlan.numericId,
           sellingPlanName: selectedPlan.name,
-          frequency: selectedPlan.frequency,
           deliveryIntervalCount: selectedPlan.deliveryIntervalCount,
         });
+
         shopify.toast.show(
           `Added${selectedPlan ? ` · ${selectedPlan.name}` : ""}`,
         );
       }
-      
-    } catch (err) {
-      shopify.toast.show(`Error: ${err?.message ?? "Failed to add to cart"}`);
+
+      // shopify.action.close();
+    } catch (error) {
+      shopify.toast.show(`Error: ${error?.message ?? "Failed to add to cart"}`);
     } finally {
-      setAddingToCart(false);
+      setIsAddingToCart(false);
     }
   }
 
-  if (loadingProduct) {
+  if (isLoadingProduct) {
     return (
       <s-page heading="Add to Cart">
         <s-section>
-          <s-text>Loading product details…</s-text>
+          <s-box padding="large">
+            <s-stack
+              direction="inline"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <s-text>Loading data...</s-text>
+            </s-stack>
+          </s-box>
         </s-section>
       </s-page>
     );
   }
 
-  if (!product || !selectedVariant) {
+  if (!productData || !selectedVariant) {
     return (
       <s-page heading="Add to Cart">
         <s-section>
-          <s-text>Product not found or has no variants.</s-text>
+          <s-text>Product not found or no variants available.</s-text>
         </s-section>
       </s-page>
     );
   }
 
-  const hasPlans = selectedVariant.sellingPlans.length > 0;
+  const hasSellingPlans = selectedVariant.sellingPlans.length > 0;
 
   return (
-    <s-page heading={product.title}>
-      <> 
-        <s-box padding="large">
+    <s-page heading={productData.title}>
+      <s-scroll-box padding="large">
         <s-section heading="Product">
           <s-text>
-            title={product.title} subtitle={product.vendor}
+            Title: {productData.title} | Vendor: {productData.vendor}
           </s-text>
         </s-section>
 
-        {product.variants.length > 1 && (
-          <s-section heading="Select Variant"  >
+        {productData.variants.length > 1 && (
+          <s-section heading="Select Variant">
             <s-choice-list
               values={[selectedVariant.id]}
-              onChange={(e) => {
-                const v = product.variants.find(
-                  (v) => v.id === e?.currentTarget.values[0],
+              onChange={(event) => {
+                const selectedId = event.currentTarget.values[0];
+
+                const variant = productData.variants.find(
+                  (variantItem) => variantItem.id === selectedId,
                 );
-                if (v) {
-                  setSelectedVariant(v);
+
+                if (variant) {
+                  setSelectedVariant(variant);
                   setSelectedPlan(null);
                 }
               }}
             >
-              {product.variants.map((v) => (
-                <s-choice
-                  key={v.id}
-                  value={v.id}
-                >{`${v.title} — $${v.price}${v.sku ? ` (${v.sku})` : ""}`}</s-choice>
+              {productData.variants.map((variantItem) => (
+                <s-choice key={variantItem.id} value={variantItem.id}>
+                  {`${variantItem.title} — $${variantItem.price}${
+                    variantItem.sku ? ` (${variantItem.sku})` : ""
+                  }`}
+                </s-choice>
               ))}
             </s-choice-list>
           </s-section>
         )}
 
-        <s-section heading="Variant">
-          <s-text>
-            title={selectedVariant.title}
-            subtitle={`$${selectedVariant.price}`}
-          </s-text>
+        <s-section heading="Variant Details">
+          <s-text>Title: {selectedVariant.title}</s-text>
+          <s-text>Price: ${selectedVariant.price}</s-text>
         </s-section>
 
-        {hasPlans && (
-          <s-section heading="Selling Plans (Subscriptions)">
-            <s-choice-list values={[selectedPlan]} onChange={(e) => setSelectedPlan(e?.currentTarget?.values?.[0])}>
-              <s-choice value={null}>
-                One-time purchase
-              </s-choice>
+        {hasSellingPlans && (
+          <s-section heading="Selling Plans">
+            <s-choice-list
+              values={[selectedPlan?.id || "one-time"]}
+              onChange={(event) => {
+                const selectedValue = event.currentTarget.values[0];
 
-              {selectedVariant.sellingPlans.map((sp) => (
-                <s-choice key={sp?.id} value={sp?.id}>
-                  {sp.name}
-                  <s-text>{`Every ${sp?.deliveryIntervalCount} ${sp?.deliveryInterval.toLowerCase()}(s)`}</s-text>
+                if (selectedValue === "one-time") {
+                  setSelectedPlan(null);
+                  return;
+                }
+
+                const plan = selectedVariant.sellingPlans.find(
+                  (planItem) => planItem.id === selectedValue,
+                );
+
+                if (plan) {
+                  setSelectedPlan(plan);
+                }
+              }}
+            >
+              <s-choice value="one-time">One-time purchase</s-choice>
+
+              {selectedVariant.sellingPlans.map((planItem) => (
+                <s-choice key={planItem.id} value={planItem.id}>
+                  {planItem.name}
+                  <s-text>
+                    {`Every ${planItem.deliveryIntervalCount} ${planItem.deliveryInterval.toLowerCase()}(s)`}
+                  </s-text>
                 </s-choice>
               ))}
             </s-choice-list>
@@ -222,55 +295,78 @@ function ProductModal() {
         )}
 
         <s-section heading="Custom Properties">
-          <s-text-field
-            label="Key"
-            value={propKey}
-            onChange={(e) => setPropKey(e?.target?.value)}
-            placeholder="Gift message"
-          />
-          <s-text-field
-            label="Value"
-            value={propVal}
-            onChange={(e) => setPropVal(e?.target?.value)}
-            placeholder="Happy Birthday!"
-          />
-          <s-button
-            onClick={() => {
-              if (!propKey.trim()) return;
-              setProperties((prev) => ({ ...prev, [propKey.trim()]: propVal }));
-              setPropKey("");
-              setPropVal("");
-            }}
-          >
-            + Add Property
-          </s-button>
-          <s-stack>
-            {Object.entries(properties).map(([k, v]) => (
-              <s-section key={k} heading={k}>
-                <s-clickable
-                  onClick={() => {
-                    const next = { ...properties };
-                    delete next[k];
-                    setProperties(next);
-                  }}
-                >
-                  <s-badge>✕ Remove</s-badge>
-                </s-clickable>
-              </s-section>
-            ))}
-          </s-stack>
-        </s-section>
+          <s-box paddingBlock="small">
+            <s-stack gap="base">
+              <s-stack direction="inline" gap="base">
+                {Object.entries(customProperties).map(([key, value]) => (
+                  <s-clickable
+                    onClick={() => {
+                      const updatedProperties = {
+                        ...customProperties,
+                      };
+                      delete updatedProperties[key];
+                      setCustomProperties(updatedProperties);
+                    }}
+                  >
+                    <s-stack
+                      key={key}
+                      direction="inline"
+                      gap="small-400"
+                      alignItems="center"
+                    >
+                      <s-badge>
+                        {" "}
+                        {key} : {value}{" "}
+                      </s-badge>
+                      <s-icon type="x" size="small" />
+                    </s-stack>
+                  </s-clickable>
+                ))}
+              </s-stack>
 
-        <s-section>
-          <s-button
-            variant="primary"
-            onClick={addToCart}
-            loading={addingToCart}
-          >
-            Add to Cart{selectedPlan ? ` · ${selectedPlan.name}` : ""}
-          </s-button>
-        </s-section></s-box>
-      </>
+              <s-text-field
+                label="Key"
+                value={propertyKey}
+                onChange={(event) => setPropertyKey(event.target.value)}
+              />
+
+              <s-text-field
+                label="Value"
+                value={propertyValue}
+                onChange={(event) => setPropertyValue(event.target.value)}
+              />
+
+              <s-button
+                onClick={() => {
+                  if (!propertyKey.trim() || !propertyValue.trim()) {
+                    shopify.toast.show("Key and value both required !!");
+                    return;
+                  }
+
+                  setCustomProperties((previousProperties) => ({
+                    ...previousProperties,
+                    [propertyKey.trim()]: propertyValue,
+                  }));
+
+                  setPropertyKey("");
+                  setPropertyValue("");
+                }}
+              >
+                + Add Property
+              </s-button>
+
+              <s-button
+                variant="primary"
+                onClick={handleAddToCart}
+                loading={isAddingToCart}
+              >
+                Add to Cart
+                {selectedPlan ? ` · ${selectedPlan.name}` : ""}
+              </s-button>
+            </s-stack>
+          </s-box>
+        </s-section>
+      </s-scroll-box>
     </s-page>
   );
 }

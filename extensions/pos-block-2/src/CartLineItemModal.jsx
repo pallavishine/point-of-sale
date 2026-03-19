@@ -1,5 +1,3 @@
-
-
 import { render } from "preact";
 import { useState, useEffect } from "preact/hooks";
 import { gql, numericId } from "./helpers";
@@ -41,7 +39,7 @@ export default async () => {
 
 function CartLineItemModal() {
   const lineItem = shopify.cartLineItem;
-  console.log("lineItemlineItem",lineItem);
+  console.log("lineItemlineItem", lineItem);
 
   const uuid = lineItem?.uuid;
   const title = lineItem?.title ?? `Item #${lineItem?.variantId}`;
@@ -49,6 +47,7 @@ function CartLineItemModal() {
   const quantity = lineItem?.quantity;
   const sku = lineItem?.sku;
   const sellingPlan = lineItem?.sellingPlan;
+  const requiresSellingPlan = lineItem?.requiresSellingPlan;
   const hasSellingPlanGroups = lineItem?.hasSellingPlanGroups ?? false;
   const existingProperties = lineItem?.properties ?? {};
   const existingDiscounts = lineItem?.discounts ?? [];
@@ -106,6 +105,13 @@ function CartLineItemModal() {
     }
     setApplyingDiscount(true);
     try {
+      console.log(
+        " uuid,asgvaga",
+        uuid,
+        discountType,
+        discountTitle.trim(),
+        discountAmount,
+      );
       await shopify.cart.setLineItemDiscount(
         uuid,
         discountType,
@@ -191,7 +197,6 @@ function CartLineItemModal() {
     }
   }
 
-
   async function removeItem() {
     try {
       await shopify.cart.removeLineItem(uuid);
@@ -202,12 +207,11 @@ function CartLineItemModal() {
     }
   }
 
-
   return (
     <s-page heading="Edit Line Item">
-      <s-scroll-view>
+      <s-scroll-box padding="large" paddingBlock="small">
         <s-section heading="Item Details">
-          <s-stack direction="block" gap="small-200">
+          <s-stack gap="small-200">
             <s-text type="strong">{title}</s-text>
             <s-text>
               Qty: {quantity}
@@ -226,7 +230,7 @@ function CartLineItemModal() {
 
         {existingDiscounts.length > 0 && (
           <s-section heading="Current Discounts">
-            <s-stack direction="block" gap="small-200">
+            <s-stack gap="small-200">
               {existingDiscounts.map((d, i) => (
                 <s-box key={i} padding="small">
                   <s-stack
@@ -245,109 +249,123 @@ function CartLineItemModal() {
                   </s-stack>
                 </s-box>
               ))}
-              <s-button  onClick={removeDiscount}>
-                Remove Discount
-              </s-button>
+              <s-button onClick={removeDiscount}>Remove Discount</s-button>
             </s-stack>
           </s-section>
         )}
 
         <s-section heading="Apply Line Item Discount">
-          {/* Discount type — radio choice list (single-select) */}
-          <s-choice-list
-            values={[discountType]}
-            onChange={(e) =>
-              setDiscountType(e.currentTarget.values?.[0] ?? "Percentage")
-            }
-          >
-            <s-choice value="Percentage">
-              <s-text>Percentage %</s-text>
-            </s-choice>
-            <s-choice value="FixedAmount">
-              <s-text>Fixed Amount $</s-text>
-            </s-choice>
-          </s-choice-list>
+          <s-stack gap="small">
+            {/* Discount type — radio choice list (single-select) */}
+            <s-choice-list
+              values={[discountType]}
+              onChange={(e) => setDiscountType(e.currentTarget.values?.[0])}
+            >
+              <s-choice value="Percentage">
+                <s-text>Percentage %</s-text>
+              </s-choice>
+              <s-choice value="FixedAmount">
+                <s-text>Fixed Amount $</s-text>
+              </s-choice>
+            </s-choice-list>
 
-          <s-text-field
-            label="Discount Title"
-            value={discountTitle}
-            onChange={(e) => setDiscountTitle(e.currentTarget.value)}
-            placeholder="Loyalty discount"
-          />
-          <s-number-field
-            label={
-              discountType === "Percentage"
-                ? "Percentage (e.g. 10)"
-                : "Fixed Amount (e.g. 5.00)"
-            }
-            value={discountAmount}
-            onChange={(e) => setDiscountAmount(e.currentTarget.value)}
-          />
-          <s-button onClick={applyDiscount} loading={applyingDiscount}>
-            Apply Discount
-          </s-button>
+            <s-text-field
+              label="Discount Title"
+              value={discountTitle}
+              onChange={(e) => setDiscountTitle(e.target?.value)}
+              placeholder="Loyalty discount"
+            />
+            <s-number-field
+              label={
+                discountType === "Percentage"
+                  ? "Percentage (e.g. 10)"
+                  : "Fixed Amount (e.g. 5.00)"
+              }
+              value={discountAmount}
+              onChange={(e) => setDiscountAmount(e.target?.value)}
+            />
+
+            <s-button onClick={applyDiscount} loading={applyingDiscount}>
+              Apply Discount
+            </s-button>
+          </s-stack>{" "}
         </s-section>
 
         <s-section heading="Custom Properties">
-          {/* Existing properties as rows with inline Remove button */}
-          {Object.keys(existingProperties).length > 0 && (
-            <s-stack direction="block" gap="small-200">
-              {Object.entries(existingProperties).map(([k, v]) => (
-                <s-box key={k} padding="small-200">
-                  <s-stack direction="inline" gap="base" alignItems="center">
-                    <s-stack direction="block" gap="small">
-                      <s-text type="strong">{k}</s-text>
-                      <s-text color="subdued">{String(v)}</s-text>
+          <s-stack gap="small">
+            {/* Existing properties as rows with inline Remove button */}
+            {Object.keys(existingProperties).length > 0 && (
+              <s-stack gap="base">
+                {Object.entries(existingProperties).map(([k, v]) => (
+                  <s-box key={k} padding="small-100">
+                    <s-stack gap="small">
+                      <s-stack
+                        direction="inline"
+                        gap="large"
+                        alignItems="center"
+                      >
+                        <s-stack gap="small">
+                          <s-text type="strong">{k}</s-text>
+                          <s-text color="subdued">{String(v)}</s-text>
+                        </s-stack>
+                        <s-button onClick={() => removeProperty(k)}>
+                          Remove
+                        </s-button>
+                      </s-stack>
                     </s-stack>
-                    <s-button
-                     
-                      onClick={() => removeProperty(k)}
-                    >
-                      Remove
-                    </s-button>
-                  </s-stack>
-                </s-box>
-              ))}
-            </s-stack>
-          )}
+                  </s-box>
+                ))}
+              </s-stack>
+            )}
 
-          {/* Add new property */}
-          <s-text-field
-            label="Key"
-            value={propKey}
-            onChange={(e) => setPropKey(e.currentTarget.value)}
-            placeholder="Gift message"
-          />
-          <s-text-field
-            label="Value"
-            value={propVal}
-            onChange={(e) => setPropVal(e.currentTarget.value)}
-            placeholder="Happy Birthday!"
-          />
-          <s-button onClick={addProperty} loading={addingProp}>
-            Add Property
-          </s-button>
+            {/* Add new property */}
+            <s-text-field
+              label="Key"
+              value={propKey}
+              onChange={(e) => setPropKey(e.target?.value)}
+              placeholder="Gift message"
+            />
+            <s-text-field
+              label="Value"
+              value={propVal}
+              onChange={(e) => setPropVal(e.target?.value)}
+              placeholder="Happy Birthday!"
+            />
+
+            <s-button onClick={addProperty} loading={addingProp}>
+              Add Property
+            </s-button>
+          </s-stack>
         </s-section>
 
         {(hasSellingPlanGroups || sellingPlan) && (
           <s-section heading="Selling Plans">
             {loadingPlans ? (
-              <s-text>Loading subscription options…</s-text>
+              
+                <s-box padding="small">
+                  <s-stack
+                    direction="inline"
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <s-text>Loading subscription options…</s-text>
+                  </s-stack>
+                </s-box>
+              
             ) : (
-           
               <s-choice-list values={[selectedPlanId]} onChange={onPlanChange}>
                 {/* One-time option — only shown when not required */}
                 <s-choice value="__one_time__">
-                    <s-stack direction="block" gap="small">
-                      <s-text type="strong">One-time purchase</s-text>
-                      <s-text color="subdued">No recurring subscription</s-text>
-                    </s-stack>
-                  </s-choice>
+                  <s-stack gap="small">
+                    <s-text type="strong">One-time purchase</s-text>
+                    <s-text color="subdued">No recurring subscription</s-text>
+                  </s-stack>
+                </s-choice>
 
                 {/* Available selling plans */}
                 {availablePlans.map((sp) => (
                   <s-choice key={sp.id} value={sp.id}>
-                    <s-stack direction="block" gap="small">
+                    <s-stack gap="small">
                       <s-text type="strong">{sp.name}</s-text>
                       <s-text color="subdued">
                         Every {sp.deliveryIntervalCount}{" "}
@@ -361,12 +379,10 @@ function CartLineItemModal() {
           </s-section>
         )}
 
-        <s-section>
-          <s-button  onClick={removeItem}>
-            Remove from Cart
-          </s-button>
-        </s-section>
-      </s-scroll-view>
+        <s-stack paddingBlock="small">
+          <s-button onClick={removeItem}>Remove from Cart</s-button>
+        </s-stack>
+      </s-scroll-box>
     </s-page>
   );
 }

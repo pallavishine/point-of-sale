@@ -315,7 +315,7 @@ export default function Index() {
               </s-stack>
             </s-grid>
           </s-clickable>
-          <s-divider direction="block" />
+          <s-divider  />
           <s-clickable
             href="#"
             paddingBlock="small-400"
@@ -330,7 +330,7 @@ export default function Index() {
               </s-stack>
             </s-grid>
           </s-clickable>
-          <s-divider direction="block" />
+          <s-divider  />
           <s-clickable
             href="#"
             paddingBlock="small-400"

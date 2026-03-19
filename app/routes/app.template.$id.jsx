@@ -998,7 +998,7 @@ export default function TemplateEditor() {
                           value={testprintQuantity}
                           onInput={(e) =>
                             setTestPrintQuantity(
-                              e.currentTarget.value ?? e.target.value,
+                              e.target.value
                             )
                           }
                         />

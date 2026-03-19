@@ -250,7 +250,7 @@ export default function SettingsPage() {
               background="subdued"
               borderRadius="base"
             >
-              <s-stack direction="block" gap="small">
+              <s-stack  gap="small">
                 <s-clickable
                   padding="small-200"
                   border="base"
