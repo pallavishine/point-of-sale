@@ -25,6 +25,12 @@ declare module './src/CartLineItemModal.jsx' {
 }
 
 //@ts-ignore
+declare module './src/FieldRenderer.jsx' {
+  const shopify: import('@shopify/ui-extensions/pos.product-details.action.render').Api;
+  const globalThis: { shopify: typeof shopify };
+}
+
+//@ts-ignore
 declare module './src/helpers.js' {
   const shopify: import('@shopify/ui-extensions/pos.cart.line-item-details.action.render').Api;
   const globalThis: { shopify: typeof shopify };

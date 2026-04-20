@@ -73,7 +73,7 @@ const FullScreenScanner = () => {
       if(productId && variantId ){
         navigation.navigate(`shopify:point-of-sale/products/${productId}/variants/${variantId}`);
       }else {
-        
+
       }
       // setScanStatus("Adding product to cart...");
 
@@ -83,7 +83,7 @@ const FullScreenScanner = () => {
       // shopify.toast.show(`Product added to cart ${cartRes}`,{ duration: 1500 });
       // setScanStatus(`Product added ${cartRes}`);
       // navigation.navigate('shopify:point-of-sale/cart');
-      
+
       // Optional navigation
 
       // setTimeout(() => {
@@ -177,7 +177,7 @@ const FullScreenScanner = () => {
 
   return (
     <s-page heading="Scan Product">
-      
+
       {isProcessing && (
         <s-box>
           <s-stack>

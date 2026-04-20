@@ -377,7 +377,7 @@ export default function GenerateBarcodePage() {
                 generationType: value,
               }));
             }}
-           
+
           >
             <s-choice value="unique">
               A uniquely generated number

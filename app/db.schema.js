@@ -147,21 +147,23 @@ const settingSchema = new mongoose.Schema(
       type: String,
       required: true,
       index: true,
+      unique: true, // ✅ one record per shop
     },
-    fields: {
+
+    // 🔥 replace fields with templates
+    templates: {
       type: Array,
-      default:[],
+      default: [],
     },
+
     discounts: {
       type: Object,
+      default: {},
     },
   },
   {
-    timestamps: {
-      createdAt: true,
-      updatedAt: false,
-    },
-  },
+    timestamps: true, // cleaner (both createdAt + updatedAt)
+  }
 );
 
 // Compound index for shop + template templateName uniqueness
