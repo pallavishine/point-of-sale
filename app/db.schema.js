@@ -141,20 +141,46 @@ const printJobSchema = new mongoose.Schema(
     },
   },
 );
+
 const settingSchema = new mongoose.Schema(
   {
     shop: {
       type: String,
       required: true,
       index: true,
-      unique: true, // ✅ one record per shop
+      unique: true,
     },
 
-    // 🔥 replace fields with templates
-    templates: {
-      type: Array,
-      default: [],
-    },
+    optionSets: [
+      {
+        name: {
+          type: String,
+          required: true,
+        },
+        status: {
+          type: Boolean,
+          default: true,
+        },
+
+        fields: {
+          type: Array,
+          default: [],
+        },
+
+        products: {
+          type: Object,
+          default:{
+            type: "all",
+            data: [],
+          }
+        },
+
+        counter: {
+          type: Object,
+          default: {},
+        },
+      },
+    ],
 
     discounts: {
       type: Object,
@@ -162,10 +188,9 @@ const settingSchema = new mongoose.Schema(
     },
   },
   {
-    timestamps: true, // cleaner (both createdAt + updatedAt)
+    timestamps: true,
   }
 );
-
 // Compound index for shop + template templateName uniqueness
 templateSchema.index({ shop: 1, templateName: 1 }, { unique: true });
 

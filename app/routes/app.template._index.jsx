@@ -187,12 +187,12 @@ export default function Index() {
 
       <s-stack direction="inline" justifyContent="end" paddingBlockEnd="small">
         <s-stack direction="inline" gap="small" alignItems="end">
-          <s-button icon="export" variant="secondary" prefix={<s-icon type="export" />}>
+          {/* <s-button icon="export" variant="secondary" prefix={<s-icon type="export" />}>
             Export
           </s-button>
           <s-button icon="import" variant="secondary" prefix={<s-icon type="import" />}>
             Import
-          </s-button>
+          </s-button> */}
           <s-button
             variant="primary"
             prefix={<s-icon type="plus" />}

@@ -185,11 +185,11 @@ export default function TemplateEditor() {
   }, []);
 
   return (
-    <s-page heading="">
+    <s-page heading="Template Builder">
       <s-link slot="breadcrumb-actions" href="/app">
         pos-app-new
       </s-link>
-
+      <s-link slot="breadcrumb-actions" href={`/app/template/${templateId}`}>Template Builder</s-link>
       {/* <SaveBar id={SAVE_BAR_ID}>
         <button
           variant="primary"
@@ -213,7 +213,7 @@ export default function TemplateEditor() {
                 style={{ cursor: "pointer" }}
                 onClick={() => {
                   if (isDirty) {
-                    console.log("You have unsaved changes. Discard and leave?");
+                    console.log("You have unsaved changes.    Discard and leave??????");
                     navigate("/app/template");
                     // handleDiscard();
                   } else {
