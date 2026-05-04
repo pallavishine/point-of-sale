@@ -1,14 +1,5 @@
 // components/LabelPrint.jsx
-// HTML + CSS label printer — no @react-pdf/renderer needed.
-//
-// KEY FIXES vs previous version:
-//  1. Barcode <img> uses /api/barcode?type=X&value=Y  (same-origin proxy)
-//     → no CSP blocks, no external image load failures
-//  2. Print triggered via Blob URL (not window.open + document.write)
-//     → works inside Shopify embedded app iframe
-//  3. All images pre-loaded and converted to base64 BEFORE building HTML
-//     → print dialog always shows barcodes, no race condition
-//  4. Robust null-guard on barcode value at every step
+
 
 import { useState ,useEffect,useCallback } from "react";
 
@@ -393,6 +384,7 @@ export default function PDFPrintButton({
 
   return (
     <s-button
+      accessibilityLabel="icon"
       variant="primary"
       onClick={handlePrint}
       disabled={isGenerating}

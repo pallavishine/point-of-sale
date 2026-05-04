@@ -1,4 +1,3 @@
-
 // components/ProductList.jsx
 import React, {
   useState,
@@ -27,6 +26,7 @@ export default function ProductList({
   isLoading,
   filters,
   setFilters,
+  customConfig
 }) {
   const fetcher = useFetcher();
 
@@ -285,6 +285,18 @@ export default function ProductList({
   // ── Inline generate (no modal) — used by per-row/per-variant buttons ─────────
   const submitGenerate = useCallback(
     (variants) => {
+      if (!assignmentType) {
+        shopify.toast.show(
+          "Please select an assignment type before generating barcodes.",{isError: true}
+        );
+        return;
+      }
+      if (!generationType) {
+        shopify.toast.show(
+          "Please select a generation type before generating barcodes.",{isError: true}
+        );
+        return;
+      }
       const formData = new FormData();
       formData.append("action", "generate_barcode");
       formData.append(
@@ -294,6 +306,7 @@ export default function ProductList({
           generationType,
           overwriteExisting,
           variants,
+          customConfig,
         }),
       );
       fetcher.submit(formData, { method: "post" });
@@ -309,7 +322,7 @@ export default function ProductList({
         {/* ── Toolbar ── */}
         <s-box paddingInline="small-200" paddingBlock="small-200">
           <s-grid gridTemplateColumns="repeat(12, 1fr)" gap="large-200">
-            <s-grid-item gridColumn="span 10" gridRow="span 1" key="1" >
+            <s-grid-item gridColumn="span 10" gridRow="span 1" key="1">
               {showFilters ? (
                 <s-search-field
                   value={filters.search}
@@ -356,6 +369,7 @@ export default function ProductList({
                     </s-tooltip>
                     <s-button
                       icon="search"
+                      accessibilityLabel="icon"
                       onClick={() => setShowFilters(true)}
                       interestFor="search-filter-tooltip"
                     />
@@ -657,13 +671,12 @@ export default function ProductList({
                 <s-table-header-row>
                   <s-table-header listSlot="primary">
                     <s-checkbox
-                    label={`${selectedVariants?.length}`}
+                      label={`${selectedVariants?.length}`}
                       checked={allFullySelected}
                       indeterminate={somePartiallyOrFullySelected}
                       onChange={(e) => handleSelectAll(e.currentTarget.checked)}
                     />
                   </s-table-header>
-               
                 </s-table-header-row>
               ) : (
                 <s-table-header-row>
@@ -747,7 +760,7 @@ export default function ProductList({
                                 : "warning"
                             }
                           >
-                            {product.status?.toLowerCase()} 
+                            {product.status?.toLowerCase()}
                           </s-badge>
                         </s-table-cell>
 
@@ -826,45 +839,43 @@ export default function ProductList({
                                         >
                                           {product.title} — {variant.title}
                                         </s-link>
-                                        <s-stack>
-                                          {(assignmentType === "sku" ||
-                                            assignmentType === "both") && (
-                                            <s-stack
-                                              direction="inline"
-                                              alignItems="center"
-                                              gap="small-400"
+                                        <s-stack
+                                          direction="inline"
+                                          alignItems="center"
+                                          gap="small-400"
+                                        >
+                                          <s-stack
+                                            direction="inline"
+                                            alignItems="center"
+                                            gap="small-400"
+                                          >
+                                            <s-icon type="barcode" />
+                                            <s-text
+                                              tone={
+                                                variant.barcode
+                                                  ? "auto"
+                                                  : "critical"
+                                              }
                                             >
-                                              <s-icon type="hashtag" />
-                                              <s-text
-                                                tone={
-                                                  variant.sku
-                                                    ? "auto"
-                                                    : "critical"
-                                                }
-                                              >
-                                                {variant.sku || "Missing"}
-                                              </s-text>
-                                            </s-stack>
-                                          )}
-                                          {(assignmentType === "barcode" ||
-                                            assignmentType === "both") && (
-                                            <s-stack
-                                              direction="inline"
-                                              alignItems="center"
-                                              gap="small-400"
+                                              {variant.barcode || "Missing"}
+                                            </s-text>
+                                          </s-stack>
+                                          <s-stack
+                                            direction="inline"
+                                            alignItems="center"
+                                            gap="small-400"
+                                          >
+                                            <s-icon type="hashtag" />
+                                            <s-text
+                                              tone={
+                                                variant.sku
+                                                  ? "auto"
+                                                  : "critical"
+                                              }
                                             >
-                                              <s-icon type="barcode" />
-                                              <s-text
-                                                tone={
-                                                  variant.barcode
-                                                    ? "auto"
-                                                    : "critical"
-                                                }
-                                              >
-                                                {variant.barcode || "Missing"}
-                                              </s-text>
-                                            </s-stack>
-                                          )}
+                                              {variant.sku || "Missing"}
+                                            </s-text>
+                                          </s-stack>
                                         </s-stack>
                                       </s-stack>
                                     </s-table-cell>
@@ -883,7 +894,7 @@ export default function ProductList({
                                           ])
                                         }
                                       >
-                                        Generate 
+                                        Generate
                                       </s-button>
                                     </s-table-cell>
                                   </s-table-row>

@@ -372,6 +372,7 @@ export default function VariantList({
                       icon="search"
                       onClick={() => setShowFilters(true)}
                       interestFor="search-filter-tooltip"
+                      accessibilityLabel="icon"
                     />
                   </>
                 ) : (

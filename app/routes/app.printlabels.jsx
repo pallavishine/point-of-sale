@@ -280,7 +280,8 @@ export default function PrintLabels() {
             <s-grid-item key={index}>
               <s-clickable onClick={(e) => setSelectedTemplate(template)} padding="none" >
                 <s-box
-                  padding="base"
+                  paddingInline="small"
+                  paddingBlock="small-400"
                   background={
                     selectedTemplate?._id == template?._id ? "base" : "subdued"
                   }
@@ -295,11 +296,11 @@ export default function PrintLabels() {
                   }
                 >
                   <s-stack  gap="none" >
-                    <s-stack direction="inline" justifyContent="space-between">
+                    <s-stack direction="inline" justifyContent="space-between" padding="none" >
                       <s-heading variant="headingSm">
                         {template.templateName}
                       </s-heading>
-                      <s-text color="subdued">{template?.dimension?.labelSize}</s-text>
+                      <s-text color="subdued" >{template?.dimension?.labelSize}</s-text>
                     </s-stack>
 
                       <s-stack alignItems="center" padding="none">
@@ -315,7 +316,7 @@ export default function PrintLabels() {
                         </div>
                       </s-stack>
 
-                    <s-stack direction="inline" justifyContent="space-between">
+                    <s-stack direction="inline" justifyContent="space-between" padding="none">
                       <s-text color="subdued">sheet</s-text>
 
                       <s-link

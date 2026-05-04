@@ -6,9 +6,10 @@ const corsJsonHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 };
+console.log("loaderrrrrrrrrrrrrrrrrrrrrrrrrrrrr=========>");
 
 export const loader = async ({ request ,params }) => {
-//   console.log("loader=========>", request);
+  console.log("loaderrrrrrrrrrrrrrrrrrrrrrrrrrrrr=========>");
 
   if (request.method === "OPTIONS") {
     return new Response(null, {
@@ -42,6 +43,8 @@ export const loader = async ({ request ,params }) => {
 };
 
 export const action = async ({ request,params }) => {
+  console.log("ACTIONACTIONACTIONACTIONACTION=========>");
+
   // console.log("ACTION, request", request);
   console.log("ACTION, method", request.method);
   console.log("request.url", request.url);

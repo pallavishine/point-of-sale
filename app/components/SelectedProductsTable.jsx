@@ -965,6 +965,7 @@ export default function SelectedProductsTable({
                             handleRemoveVariant(variant?.variantId)
                           }
                           icon="x-circle"
+                          accessibilityLabel="icon"
                         />
                       </s-stack>
                     </s-table-cell>

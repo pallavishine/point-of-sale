@@ -18,14 +18,6 @@ export const AdvancedDesign = ({
           ))}
         </s-stack>
       </s-box>
-
-      <s-box>
-        <s-heading level={3}>Canvas</s-heading>
-        <s-text color="subdued" size="small">
-          Drag elements to position them on the label
-        </s-text>
-       
-      </s-box>
     </s-grid>
   </s-box>
 );

@@ -108,7 +108,7 @@ function CartLineItemModal() {
   return (
     <s-page heading="Edit Line Item">
       <s-scroll-box padding="large" paddingBlock="small">
-        <s-section heading="Item Details">
+        {/* <s-section heading="Item Details">
           <s-stack gap="small-200">
             <s-text type="strong">{title}</s-text>
             <s-text>
@@ -118,7 +118,7 @@ function CartLineItemModal() {
             </s-text>
           
           </s-stack>
-        </s-section>
+        </s-section> */}
 
         {existingDiscounts.length > 0 && (
           <s-section heading="Current Discounts">
@@ -192,22 +192,13 @@ function CartLineItemModal() {
             {Object.keys(existingProperties).length > 0 && (
               <s-stack gap="base">
                 {Object.entries(existingProperties).map(([k, v]) => (
-                  <s-box key={k} padding="small-100">
-                    <s-stack gap="small">
-                      <s-stack
-                        direction="inline"
-                        gap="large"
-                        alignItems="center"
-                      >
-                        <s-stack gap="small">
-                          <s-text type="strong">{k}</s-text>
-                          <s-text color="subdued">{String(v)}</s-text>
-                        </s-stack>
-                        <s-button onClick={() => removeProperty(k)}>
-                          Remove
+                  <s-box key={k} padding="small-100">                    
+                        <s-stack gap="small" direction="inline" justifyContent="space-between" alignItems="center" >
+                          <s-text type="strong">{k} : {" "} {String(v)}</s-text>
+                        <s-button  onClick={() => removeProperty(k)}>
+                          x
                         </s-button>
-                      </s-stack>
-                    </s-stack>
+                        </s-stack>
                   </s-box>
                 ))}
               </s-stack>

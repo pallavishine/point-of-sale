@@ -1,84 +1,77 @@
+// @ts-ignore
 export default function FieldRenderer({ field, value, onChange }) {
+  // @ts-ignore
   const handleChange = (event) => {
     const target = event.currentTarget;
-
     let val;
-
-    // Handle different input types
-    if ( field.fieldType === "switch") {
+    if (field.fieldType === "switch") {
       val = target.checked;
     } else {
       val = target.value;
     }
     onChange(field.id, val);
-
   };
 
   switch (field.fieldType) {
-    // ✅ TEXT
     case "text":
       return (
         <s-text-field
           label={field.label}
           value={value || ""}
           onChange={handleChange}
+          onInput={handleChange}
+          required={field?.required}
         />
       );
 
-    // ✅ TEXTAREA
     case "textarea":
       return (
         <s-text-area
           label={field.label}
           value={value || ""}
           onChange={handleChange}
+          onInput={handleChange}
+          required={field?.required}
         />
       );
 
-    // ✅ EMAIL
-    case "email":
-      return (
-        <s-email-field
-          label={field.label}
-          value={value || ""}
-          onChange={handleChange}
-        />
-      );
-
-    // ✅ NUMBER
     case "number":
       return (
         <s-number-field
           label={field.label}
           value={value || ""}
           onChange={handleChange}
+          onInput={handleChange}
+          required={field?.required}
         />
       );
 
-    // ✅ CHECKBOX
     case "checkbox":
       return (
-         <>
-        <s-text>{field.label}</s-text>
-        <s-choice-list
-          // label={field.label}
-          multiple
-          values={value ?? []}
-          onChange={(event) => {
-            const selected = event.currentTarget.values;
-            onChange(field.id, selected);
-          }}
-        >
-          {field.options?.map((opt) => (
-            <s-choice key={opt.value} value={opt.value}>
-              {opt.label}
-            </s-choice>
-          ))}
+        <>
+          <s-text>{field.label}</s-text>
+          <s-choice-list
+            multiple
+            values={value ?? []}
+            onChange={(event) => {
+              const selected = event.currentTarget.values;
+              onChange(field.id, selected);
+            }}
+          >
+            {field.options?.map(
+              (
+                // @ts-ignore
+                opt,
+              ) => (
+                <s-choice key={opt.name} value={opt.name}>
+                  {opt.name}
+                </s-choice>
+              ),
+            )}
           </s-choice-list>
-          </>
+        </>
       );
 
-    // ✅ SWITCH
     case "switch":
       return (
         // @ts-ignore
@@ -86,82 +79,115 @@ export default function FieldRenderer({ field, value, onChange }) {
           label={field.label}
           checked={value || false}
           onChange={handleChange}
+          onInput={handleChange}
         />
       );
 
-    // ✅ RADIO
     case "radio":
       return (
-        <s-choice-list
-          // label={field.label}
-          values={value ? [value] : []}
-          onChange={(event) => {
-            const selected = event.currentTarget.values[0];
-            onChange(field.id, selected);
-          }}
-        >
-          {field.options?.map((opt) => (
-            <s-choice key={opt.value} value={opt.value}>
-              {opt.label}
-            </s-choice>
-          ))}
-        </s-choice-list>
+        <>
+          <s-text>{field.label}</s-text>
+          <s-choice-list
+            values={value ? [value] : []}
+            onChange={(event) => {
+              // @ts-ignore
+              const selected = event.currentTarget.values[0];
+              onChange(field.id, selected);
+            }}
+          >
+            {field.options?.map(
+              (
+                // @ts-ignore
+                opt,
+              ) => (
+                <s-choice key={opt.name} value={opt.name}>
+                  {opt.name}
+                </s-choice>
+              ),
+            )}
+          </s-choice-list>
+        </>
       );
 
-    // ✅ DATE FIELD
+    case "button":
+      return (
+        <>
+          <s-text>{field.label}</s-text>
+          <s-stack direction="inline" gap="small">
+            {field.options?.map(
+              (
+                // @ts-ignore
+                opt,
+              ) => (
+                <s-button
+                  key={opt.name}
+                  variant={opt.name === value ? "primary" : "secondary"}
+                  onClick={() => onChange(field.id, opt.name)}
+                >
+                  {opt.name}
+                </s-button>
+              ),
+            )}
+          </s-stack>
+        </>
+      );
+
+    case "image_swatch":
+      return (
+        <s-box paddingBlock="small">
+          <s-stack gap="small">
+            <s-text>{field.label}</s-text>
+
+            <s-stack direction="inline" gap="small">
+              {field.options?.map(
+                (
+                  // @ts-ignore
+                  opt,
+                ) => {
+                  const isSelected = value === opt.name;
+
+                  return (
+                    <s-clickable
+                      key={opt.name}
+                      onClick={() => onChange(field.id, opt.name)}
+                    >
+                      <s-stack alignContent="center" alignItems="center">
+                        <s-box
+                          blockSize="100px"
+                          inlineSize="100px"
+                          maxBlockSize="100px"
+                          maxInlineSize="100px"
+                          minBlockSize="100px"
+                          minInlineSize="100px"
+                        >
+                          <s-image
+                            src={opt.imageUrl}
+                            inlineSize="fill"
+                            objectFit="cover" // or "contain" if you don't want cropping
+                          />
+
+                          {isSelected && <s-badge tone="success">✓</s-badge>}
+                        </s-box>
+                      </s-stack>
+                    </s-clickable>
+                  );
+                },
+              )}
+            </s-stack>
+          </s-stack>
+        </s-box>
+      );
+
     case "dateField":
       return (
         <s-date-field
           label={field.label}
           value={value || ""}
           onChange={handleChange}
+          onInput={handleChange}
         />
       );
-
-    // ✅ DATE PICKER (fallback)
-    case "datePicker":
-      return (
-        <>
-  <s-button command="--show" commandFor="date-picker">
-    Select Time
-  </s-button>
-          <s-date-picker
-            id="date-picker"
-          // label={field.label}
-          value={value || ""}
-          onChange={handleChange}
-          />
-          </>
-      );
-
-    // ✅ TIME FIELD
-    case "timeField":
-      return (
-        <s-time-field
-          label={field.label}
-          value={value || ""}
-          onChange={handleChange}
-        />
-      );
-
-    // ✅ TIME PICKER (fallback)
-    case "timePicker":
-      return (
-        <>
-  <s-button command="--show" commandFor="time-picker">
-    Select Time
-  </s-button>
-        <s-time-picker
-          id="time-picker"
-          value={value || ""}
-          onChange={handleChange}
-        />
-        </>
-          );
-
-    // ❌ DEFAULT
     default:
       return <s-text>Unsupported field type</s-text>;
   }
 }
-

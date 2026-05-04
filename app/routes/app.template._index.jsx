@@ -295,6 +295,7 @@ export default function Index() {
                         </s-tooltip>
                         <s-button
                           interestFor="edit-button-tooltip"
+                          accessibilityLabel="icon"
                           variant="tertiary"
                           size="small"
                           href={`/app/template/${template?._id}`}
@@ -308,6 +309,7 @@ export default function Index() {
                         </s-tooltip>
                         <s-button
                           interestFor="duplicate-button-tooltip"
+                          accessibilityLabel="icon"
                           variant="tertiary"
                           size="small"
                           onClick={() => {
@@ -341,6 +343,7 @@ export default function Index() {
                           <s-text>Delete template</s-text>
                         </s-tooltip>
                         <s-button
+                        accessibilityLabel="icon"
                           interestFor="delete-button-tooltip"
                           commandFor="delete-template-modal"
                           command="--show"
@@ -365,7 +368,7 @@ export default function Index() {
         )}
       </s-stack>
 
-      <s-modal id="delete-template-modal" heading="Delete template?">
+      <s-modal id="delete-template-modal" heading="Delete template?" accessibilityLabel="Modal">
         <s-stack gap="base">
           <s-text>
             Are you sure you want to delete "{deleteTemplate?.name}" template?

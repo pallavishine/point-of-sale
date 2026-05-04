@@ -158,8 +158,12 @@ const settingSchema = new mongoose.Schema(
           required: true,
         },
         status: {
-          type: Boolean,
-          default: true,
+          type: String,
+          default: "inactive",
+        },
+        target: {
+          type: String,
+          default: "product",
         },
 
         fields: {
@@ -171,7 +175,8 @@ const settingSchema = new mongoose.Schema(
           type: Object,
           default:{
             type: "all",
-            data: [],
+            products: [],
+            collections: [],
           }
         },
 

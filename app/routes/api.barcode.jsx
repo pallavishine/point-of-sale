@@ -1,14 +1,8 @@
-// app/routes/api.barcode.jsx
-// Remix server route — proxies TEC-IT barcode images through YOUR domain.
-//
-// WHY:  Shopify embedded apps block window.open() + external img src via CSP.
-//       By proxying through your own domain, the <img src="/api/barcode?...">
-//       is same-origin — no CSP issues, no CORS issues, always loads.
-//
-// USAGE in HTML:
-//   <img src="/api/barcode?type=code128&value=12345678" />
 
+console.log("aaaaaaaaaaaaaaaaaaaaaaa")
 export async function loader({ request }) {
+console.log("loaderloaderloaderloaderloader")
+  
   const url    = new URL(request.url);
   const type   = url.searchParams.get("type")  || "code128";
   const value  = url.searchParams.get("value") || "";

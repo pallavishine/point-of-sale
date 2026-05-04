@@ -51,6 +51,7 @@ export default function PDFPrintButton({
 
   return (
     <s-button
+    accessibilityLabel="icon"
       variant="primary"
       onClick={() => {
         if (!documentProps.testPrint && !documentProps.selectedTemplate) {

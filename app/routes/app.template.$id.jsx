@@ -160,25 +160,7 @@ export default function TemplateEditor() {
     setActiveSettingId(null);
   }, [resetForm]);
 
-  // ── Drag end (field reorder) ───────────────────────────────────────────────
-  const handleDragEnd = useCallback(
-    ({ source, destination }) => {
-      if (!destination) return;
-      if (
-        source.droppableId === destination.droppableId &&
-        source.index === destination.index
-      )
-        return;
-      if (source.droppableId === destination.droppableId) {
-        reorderFieldsInLine(
-          source.droppableId,
-          source.index,
-          destination.index,
-        );
-      }
-    },
-    [reorderFieldsInLine],
-  );
+
 
   const handleSettingClick = useCallback((lineId) => {
     setActiveSettingId((prev) => (prev === lineId ? null : lineId));
@@ -377,12 +359,12 @@ export default function TemplateEditor() {
                     ) : (
                       /* ── Label Settings tab  */
                       <>
-                        <s-stack direction="inline" gap="small">
+                        {/* <s-stack direction="inline" gap="small-200">
                           {["simple", "advanced"].map((mode) => (
                             <s-clickable
                               key={mode}
                               border="base"
-                              padding="small"
+                              padding="small-200"
                               onClick={() => setDesignMode(mode)}
                               background={
                                 designMode === mode ? "strong" : "transparent"
@@ -393,9 +375,9 @@ export default function TemplateEditor() {
                                 : "Advanced Design"}
                             </s-clickable>
                           ))}
-                        </s-stack>
+                        </s-stack> */}
 
-                        <s-box paddingInline="none" paddingBlock="base">
+                        <s-box paddingInline="none" paddingBlock="small-400">
                           {/* <s-grid
                             gridTemplateColumns="repeat(4, 4fr)"
                             gap="base"
@@ -421,8 +403,7 @@ export default function TemplateEditor() {
 
                         {designMode === "simple" ? (
                           <s-stack
-                            vertical
-                            gap="small"
+                            gap="small-400"
                             style={{ marginTop: "12px" }}
                           >
                             {formData?.lines.map((line) => (
